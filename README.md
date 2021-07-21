@@ -20,13 +20,13 @@ A library to allow the usage of NexPloit security scanner inside of the Crystal 
 
 To use the library you will first need to
 
-1. Register for an account at (signup)[https://nexploit.app/signup]
+1. Register for an account at [signup](https://nexploit.app/signup)
 
-2. install the (nexploit-cli)[https://www.npmjs.com/package/@neuralegion/nexploit-cli] utility
+2. install the [nexploit-cli](https://www.npmjs.com/package/@neuralegion/nexploit-cli) utility
 
-3. Generate an API key from your (UI)[https://kb.neuralegion.com/#/guide/np-web-ui/advanced-set-up/managing-personal-account?id=managing-your-personal-api-keys-authentication-tokens]
+3. Generate an API key from your [UI](https://kb.neuralegion.com/#/guide/np-web-ui/advanced-set-up/managing-personal-account?id=managing-your-personal-api-keys-authentication-tokens)
 
-4. Generate a Repeater ID from your (UI)[https://kb.neuralegion.com/#/guide/np-web-ui/advanced-set-up/managing-repeaters]
+4. Generate a Repeater ID from your [UI](https://kb.neuralegion.com/#/guide/np-web-ui/advanced-set-up/managing-repeaters)
 
 5. The preferred approach is to setup your ID and API-Key as ENV vars `NEXPLOIT_TOKEN` for API key, and `NEXPLOIT_REPEATER` for the repeater ID.
 
