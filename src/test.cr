@@ -1,3 +1,5 @@
+require "./scan.cr"
+
 module SecTester
   class Test
     Log = SecTester::Log.for("Test")
@@ -6,8 +8,10 @@ module SecTester
     @repeater : String
 
     @repeater_process : Process
+    @scan : Scan
 
     def initialize(@token : String, @repeater : String)
+      @scan = Scan.new(token: @token, repeater: @repeater)
       @repeater_process = start_repeater
       sleep 10.seconds # Let repeatr start
     end
@@ -23,6 +27,7 @@ module SecTester
 
       @token = token
       @repeater = repeater
+      @scan = Scan.new(token: token, repeater: repeater)
       @repeater_process = start_repeater
       sleep 10.seconds # Let repeatr start
     end
@@ -53,35 +58,16 @@ module SecTester
     def run_check(scan_name : String, test_name : String, target_url : String)
       Log.info { "Running check #{test_name} on #{target_url}" }
 
-      # Start a new scan with the spawned repeater process
-      scan_commands = [
-        "nexploit-cli", "scan:run",
-        "--test", test_name,
-        "--name", scan_name,
-        "--crawler", target_url,
-        "--token", @token,
-        "--repeater", @repeater,
-      ]
-      scan_process = ProcessHandler.new
-
-      # Fetching scan ID
-      scan_process.call(scan_process.spawn_process(scan_commands))
-      scan_id = scan_process.output.to_s
+      # Start a new scan
+      scan_id = @scan.start(scan_name: scan_name, test_name: test_name, target_url: target_url)
 
       Log.info { "Scan process started, polling on results with scan ID: #{scan_id}" }
-
       # Polling for scan results
-      poll_commands = [
-        "nexploit-cli", "scan:polling",
-        "--token", @token,
-        "--interval", "30s",
-        "--breakpoint", "any",
-        "--timeout", "20m",
-        scan_id,
-      ]
 
-      poll_process = ProcessHandler.new
-      poll_process.call(poll_process.spawn_process(poll_commands))
+      @scan.poll(
+        timeout: 20.minutes,
+        on_issue: true,
+      )
     end
   end
 end
