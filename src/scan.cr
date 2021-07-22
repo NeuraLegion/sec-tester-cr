@@ -84,15 +84,14 @@ module SecTester
           if (Time.monotonic - time_started) > timeout
             Log.warn { "Scan timed out, stop polling".colorize.yellow }
             stop
-            raise Timeout.new("Scan timed out")
           end
         end
 
         if on_issue
           if response_json["issuesLength"].as_i > 0
             Log.warn { "Scan has #{response_json["issuesLength"]} issues, stop polling".colorize.red }
+            stop
             get_issues.each do |issue|
-              stop
               raise IssueFound.new("Name: #{issue["name"]}, Severity: #{issue["severity"]}")
             end
           end
