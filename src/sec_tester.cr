@@ -14,4 +14,8 @@ module SecTester
 
   # Not the most beautiful way to do this, but it works.
   class Error < Exception; end
+
+  class IssueFound < Exception; end
+
+  class Timeout < Exception; end
 end

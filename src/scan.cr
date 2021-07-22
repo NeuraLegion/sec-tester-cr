@@ -1,4 +1,5 @@
 require "json"
+require "colorize"
 
 module SecTester
   class Scan
@@ -6,6 +7,7 @@ module SecTester
 
     @scan_id : String?
     @running : Bool = false
+    @issues : Array(String) = Array(String).new
 
     def initialize(@token : String, @repeater : String)
     end
@@ -73,24 +75,26 @@ module SecTester
         response = poll_call
         response_json = JSON.parse(response.body.to_s)
         if (response_json["status"] == "done")
-          Log.info { "Scan done, stop polling" }
+          Log.info { "Scan done, stop polling".colorize.green }
           stop
           break
         end
 
         if timeout
           if (Time.monotonic - time_started) > timeout
-            Log.info { "Scan timed out, stop polling" }
+            Log.warn { "Scan timed out, stop polling".colorize.yellow }
             stop
-            break
+            raise Timeout.new("Scan timed out")
           end
         end
 
         if on_issue
           if response_json["issuesLength"].as_i > 0
-            Log.info { "Scan has #{response_json["issuesLength"]} issues, stop polling" }
-            stop
-            break
+            Log.warn { "Scan has #{response_json["issuesLength"]} issues, stop polling".colorize.red }
+            get_issues.each do |issue|
+              stop
+              raise IssueFound.new("Name: #{issue["name"]}, Severity: #{issue["severity"]}")
+            end
           end
         end
       end
@@ -106,6 +110,30 @@ module SecTester
         url: stop_url,
         headers: headers
       )
+    end
+
+    private def get_issues : Array(JSON::Any)
+      issues_url = "#{BASE_URL}/api/v1/scans/#{@scan_id}/issues"
+
+      headers = get_headers
+      response = HTTP::Client.get(
+        url: issues_url,
+        headers: headers
+      )
+
+      5.times do
+        if response.status_code >= 500
+          sleep 5
+          response = HTTP::Client.get(
+            url: issues_url,
+            headers: headers
+          )
+        else
+          break
+        end
+      end
+
+      JSON.parse(response.body.to_s).as_a
     end
 
     private def poll_call : HTTP::Client::Response
