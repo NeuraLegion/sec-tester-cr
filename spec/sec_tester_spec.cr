@@ -28,7 +28,7 @@ describe SecTester::Test do
       scan_name: "UnitTestingScan - OSI",
       test_name: "osi",
       target: SecTester::Target.new("http://#{addr}/?command=time")
-      )
+    )
   ensure
     server.try &.close
     tester.try &.cleanup
@@ -59,7 +59,7 @@ describe SecTester::Test do
       scan_name: "UnitTestingScan - XSS",
       test_name: "xss",
       target: SecTester::Target.new("http://#{addr}/?name=jhon")
-      )
+    )
   ensure
     server.try &.close
     tester.try &.cleanup
