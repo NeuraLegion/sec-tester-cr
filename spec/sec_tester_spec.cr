@@ -24,7 +24,11 @@ describe SecTester::Test do
     end
 
     tester = SecTester::Test.new
-    tester.run_check(scan_name: "UnitTestingScan", test_name: "osi", target_url: "http://#{addr}/?command=time")
+    tester.run_check(
+      scan_name: "UnitTestingScan - OSI",
+      test_name: "osi",
+      target: SecTester::Target.new("http://#{addr}/?command=time")
+      )
   ensure
     server.try &.close
     tester.try &.cleanup
@@ -51,7 +55,11 @@ describe SecTester::Test do
     end
 
     tester = SecTester::Test.new
-    tester.run_check(scan_name: "UnitTestingScan", test_name: "xss", target_url: "http://#{addr}/?name=jhon")
+    tester.run_check(
+      scan_name: "UnitTestingScan - XSS",
+      test_name: "xss",
+      target: SecTester::Target.new("http://#{addr}/?name=jhon")
+      )
   ensure
     server.try &.close
     tester.try &.cleanup

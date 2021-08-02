@@ -1,5 +1,6 @@
 require "log"
 require "./process_handler.cr"
+require "./target.cr"
 require "./test.cr"
 
 module SecTester

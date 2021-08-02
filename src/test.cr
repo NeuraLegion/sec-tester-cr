@@ -55,11 +55,11 @@ module SecTester
       end
     end
 
-    def run_check(scan_name : String, test_name : String, target_url : String)
-      Log.info { "Running check #{test_name} on #{target_url}" }
+    def run_check(scan_name : String, test_name : String, target : Target)
+      Log.info { "Running check #{test_name} on #{target}" }
 
       # Start a new scan
-      scan_id = @scan.start(scan_name: scan_name, test_name: test_name, target_url: target_url)
+      scan_id = @scan.start(scan_name: scan_name, test_name: test_name, target: target)
 
       Log.info { "Scan process started, polling on results with scan ID: #{scan_id}" }
       # Polling for scan results

@@ -24,7 +24,7 @@ module SecTester
       headers
     end
 
-    def start(scan_name : String, test_name : String, target_url : String) : String
+    def start(scan_name : String, test_name : String, target : Target) : String
       headers = get_headers
 
       new_scan_url = "#{BASE_URL}/api/v1/scans"
@@ -33,7 +33,7 @@ module SecTester
         "name":                 scan_name,
         "module":               "dast",
         "tests":                [test_name],
-        "crawlerUrls":          [target_url],
+        "crawlerUrls":          [target.url],
         "repeaters":            [@repeater],
         "attackParamLocations": ["body", "query", "fragment"],
         "discoveryTypes":       ["crawler"],
