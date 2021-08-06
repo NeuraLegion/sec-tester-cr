@@ -2,6 +2,8 @@
 
 A library to allow the usage of NexPloit security scanner inside of the Crystal SPECS unit testing flow
 
+For support and help visit the [NeuraLegion Discord](https://discord.gg/jy9BB7twtG)
+
 ## Installation
 
 1. Add the dependency to your `shard.yml`:
