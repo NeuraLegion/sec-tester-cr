@@ -22,7 +22,7 @@ For support and help visit the [NeuraLegion Discord](https://discord.gg/jy9BB7tw
 
 To use the library you will first need to
 
-1. Register for an account at [signup](https://nexploit.app/signup)
+1. Register for an account at [signup](https://nexploit.app/signup?utm_campaign=sectester&utm_source=github&utm_medium=readme)
 2. install the [nexploit-cli](https://www.npmjs.com/package/@neuralegion/nexploit-cli) utility
 3. Generate an API key from your [UI](https://kb.neuralegion.com/#/guide/np-web-ui/advanced-set-up/managing-personal-account?id=managing-your-personal-api-keys-authentication-tokens)
 4. Generate a Repeater ID from your [UI](https://kb.neuralegion.com/#/guide/np-web-ui/advanced-set-up/managing-repeaters)
