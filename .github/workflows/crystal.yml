@@ -19,4 +19,7 @@ jobs:
     - name: Install dependencies
       run: shards install
     - name: Run tests
+      env:
+        NEXPLOIT_TOKEN: ${{ secrets.NEXPLOIT_TOKEN }}
+        NEXPLOIT_REPEATER: ${{ secrets.NEXPLOIT_REPEATER }}
       run: crystal spec
