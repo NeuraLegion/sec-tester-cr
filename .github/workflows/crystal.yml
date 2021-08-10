@@ -18,6 +18,12 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install dependencies
       run: shards install
+    - name: Install npm and Repeater
+      run: |
+        sudo apt update
+        sudo apt-get install nodejs-dev node-gyp libssl1.0-dev
+        sudo apt-get install nodejs npm
+        sudo npm install -g @neuralegion/nexploit-cli --unsafe-perm=true
     - name: Run tests
       env:
         NEXPLOIT_TOKEN: ${{ secrets.NEXPLOIT_TOKEN }}
