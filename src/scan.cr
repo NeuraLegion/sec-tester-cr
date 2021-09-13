@@ -119,7 +119,6 @@ module SecTester
       headers = get_headers
       body_io = IO::Memory.new
       file_io = IO::Memory.new(target.to_har)
-      File.write("/tmp/myfile.har", target.to_har)
       multipart_headers = HTTP::Headers.new
       multipart_headers["Content-Type"] = "application/har+json"
       HTTP::FormData.build(body_io, MIME::Multipart.generate_boundary) do |builder|
