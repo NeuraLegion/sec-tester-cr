@@ -66,6 +66,19 @@ end
 
 ```
 
+### Manual target configurations
+
+The following example shows how to configure a target manually.
+this is very useful to control expected response from the target.
+
+```crystal
+target: SecTester::Target.new(
+  method: "GET",
+  url: "http://#{addr}/?name=jhon",
+  response_headers: HTTP::Headers{"Content-Type" => "text/html"}
+  )
+```
+
 ## Contributing
 
 1. Fork it (<https://github.com/NeuraLegion/sec_tester/fork>)
