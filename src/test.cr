@@ -14,7 +14,7 @@ module SecTester
       @scan = Scan.new(token: @token, repeater: @repeater)
       @repeater_process = start_repeater
       sleep 10.seconds # Let repeatr start
-      raise SecTester::Error.new("Repeater process isn't running: #{@repeater_process.error?.to_s}") unless @repeater_process.exists?
+      raise SecTester::Error.new("Repeater process isn't running: #{repeater_output}") unless @repeater_process.exists?
     end
 
     def initialize
@@ -31,7 +31,7 @@ module SecTester
       @scan = Scan.new(token: token, repeater: repeater)
       @repeater_process = start_repeater
       sleep 10.seconds # Let repeatr start
-      raise SecTester::Error.new("Repeater process isn't running: #{@repeater_process.error?.to_s}") unless @repeater_process.exists?
+      raise SecTester::Error.new("Repeater process isn't running: #{repeater_output}") unless @repeater_process.exists?
     end
 
     # method to start and spawn the repeater process
@@ -60,6 +60,9 @@ module SecTester
     def run_check(scan_name : String, test_name : String, target : Target)
       Log.info { "Running check #{test_name} on #{target}" }
 
+      # Verify Repeater process
+      raise SecTester::Error.new("Repeater process isn't running: #{repeater_output}") unless @repeater_process.exists?
+
       # Start a new scan
       scan_id = @scan.start(scan_name: scan_name, test_name: test_name, target: target)
 
@@ -70,6 +73,10 @@ module SecTester
         timeout: 20.minutes,
         on_issue: true,
       )
+    end
+
+    private def repeater_output : String
+      (@repeater_process.error? || @repeater_process.output?).to_s
     end
   end
 end
