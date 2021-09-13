@@ -29,14 +29,16 @@ module SecTester
 
       new_scan_url = "#{BASE_URL}/api/v1/scans"
 
+      file_id = upload_archive(target)
+
       body = {
         "name":                 scan_name,
         "module":               "dast",
         "tests":                [test_name],
-        "crawlerUrls":          [target.url],
+        "fileId":               file_id,
         "repeaters":            [@repeater],
         "attackParamLocations": ["body", "query", "fragment"],
-        "discoveryTypes":       ["crawler"],
+        "discoveryTypes":       ["archive"],
       }.to_json
 
       Log.debug { "Sending body request: #{body}" }
@@ -109,6 +111,47 @@ module SecTester
         url: stop_url,
         headers: headers
       )
+    end
+
+    private def upload_archive(target : Target, discard : Bool = true) : String # this returns an archive ID
+      archive_url = "#{BASE_URL}/api/v1/files?discard=#{discard}"
+
+      headers = get_headers
+      body_io = IO::Memory.new
+      file_io = IO::Memory.new(target.to_har)
+      File.write("/tmp/myfile.har", target.to_har)
+      multipart_headers = HTTP::Headers.new
+      multipart_headers["Content-Type"] = "application/har+json"
+      HTTP::FormData.build(body_io, MIME::Multipart.generate_boundary) do |builder|
+        builder.file(
+          "file",
+          file_io,
+          HTTP::FormData::FileMetadata.new(filename: "#{Random::Secure.hex}.har"),
+          multipart_headers
+        )
+        headers["Content-Type"] = builder.content_type
+      end
+
+      response = HTTP::Client.post(
+        url: archive_url,
+        headers: headers,
+        body: body_io.to_s
+      )
+
+      5.times do
+        if response.status_code >= 500
+          sleep 5
+          response = HTTP::Client.post(
+            url: archive_url,
+            headers: headers,
+            body: body_io.to_s
+          )
+        else
+          break
+        end
+      end
+      Log.debug { "Uploaded archive to #{BASE_URL}/api/v1/files?discard=#{discard} response: #{response.body.to_s}" }
+      JSON.parse(response.body.to_s)["id"].to_s
     end
 
     private def get_issues : Array(JSON::Any)
