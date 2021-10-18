@@ -57,7 +57,7 @@ module SecTester
       end
     end
 
-    def run_check(scan_name : String, test_name : String, target : Target)
+    def run_check(scan_name : String, test_name : String | Array(String), target : Target)
       Log.info { "Running check #{test_name} on #{target}" }
 
       # Verify Repeater process
