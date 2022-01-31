@@ -3,7 +3,7 @@ require "colorize"
 
 module SecTester
   class Scan
-    BASE_URL = ENV["NEXPLOIT_URL"]? || "https://nexploit.app"
+    BASE_URL = ENV["NEXPLOIT_URL"]? || "https://app.neuralegion.com"
 
     @scan_id : String?
     @running : Bool = false
