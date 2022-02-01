@@ -79,6 +79,31 @@ target: SecTester::Target.new(
   )
 ```
 
+### Integrating into the CI
+
+To integrate this library into the CI you will need to add the `NEXPLOIT_TOKEN` and `NEXPLOIT_REPEATER` ENV vars to your CI.
+Then add the following to your `github actions` configuration:
+
+```yml
+steps:
+  - name: Install npm and Repeater
+    run: |
+      apt update
+      apt-get install -y libnode-dev node-gyp libssl-dev
+      apt-get install -y nodejs npm
+      npm install -g @neuralegion/nexploit-cli --unsafe-perm=true
+  - name: Run tests
+    env:
+      NEXPLOIT_TOKEN: ${{ secrets.NEXPLOIT_TOKEN }}
+      NEXPLOIT_REPEATER: ${{ secrets.NEXPLOIT_REPEATER }}
+    run: crystal spec
+```
+
+### Example Usage
+
+You can see this shard in action at the [Lucky Sec Test](https://github.com/bararchy/lucky_sec_test) repo.
+Specifically look at the [Flow Specs](https://github.com/bararchy/lucky_sec_test/blob/bc70e6c13147d5ccfec6fef9493b09a792fdc434/spec/flows/authentication_spec.cr#L31)
+
 ## Contributing
 
 1. Fork it (<https://github.com/NeuraLegion/sec_tester/fork>)
