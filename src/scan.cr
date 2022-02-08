@@ -66,7 +66,32 @@ module SecTester
             Log.warn { "Scan has #{response_json["issuesLength"]} issues, stop polling".colorize.red }
             stop
             get_issues.each do |issue|
-              raise IssueFound.new("Name: #{issue["name"]}, Severity: #{issue["severity"]}")
+              message = String.build do |str|
+                str << "\n"
+                str << "Name: ".colorize.red.bold
+                str << issue["name"].colorize.white.bold
+                str << "\n"
+                str << "Severity: ".colorize.red.bold
+                str << issue["severity"].colorize.white.bold
+                str << "\n"
+                str << "CWE: ".colorize.red.bold
+                str << issue["cwe"].colorize.white.bold
+                str << "\n"
+                str << "Details: ".colorize.red.bold
+                str << issue["details"].to_s.gsub("\n", " ").colorize.white.bold
+                str << "\n"
+                str << "Remediation: ".colorize.red.bold
+                str << issue["remedy"].to_s.gsub("\n", " ").colorize.white.bold
+                str << "\n"
+                str << "Link to Issue: ".colorize.red.bold
+                str << "#{BASE_URL}/scans/#{@scan_id}/issues/#{issue["id"]}".colorize.white.bold
+                str << "\n"
+                str << "Additional Info: ".colorize.red.bold
+                str << issue["resources"].as_a.join(", ").colorize.white.bold
+                str << "\n"
+              end
+              Log.warn { message }
+              raise IssueFound.new(message)
             end
           end
         end
