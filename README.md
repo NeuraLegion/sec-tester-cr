@@ -25,8 +25,7 @@ To use the library you will first need to
 1. Register for an account at [signup](https://app.neuralegion.com/signup)
 2. install the [nexploit-cli](https://www.npmjs.com/package/@neuralegion/nexploit-cli) utility
 3. Generate an API key from your [UI](https://docs.neuralegion.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens)
-4. Generate a Repeater ID from your [UI](https://docs.neuralegion.com/docs/manage-repeaters#create-a-new-repeater)
-5. The preferred approach is to setup your ID and API-Key as ENV vars `NEXPLOIT_TOKEN` for API key, and `NEXPLOIT_REPEATER` for the repeater ID.
+4. The preferred approach is to setup your API-Key as ENV var `NEXPLOIT_TOKEN` for API key.
 
 ### Use Inside Specs
 
@@ -81,7 +80,7 @@ target: SecTester::Target.new(
 
 ### Integrating into the CI
 
-To integrate this library into the CI you will need to add the `NEXPLOIT_TOKEN` and `NEXPLOIT_REPEATER` ENV vars to your CI.
+To integrate this library into the CI you will need to add the `NEXPLOIT_TOKEN` ENV vars to your CI.
 Then add the following to your `github actions` configuration:
 
 ```yml
@@ -95,7 +94,6 @@ steps:
   - name: Run tests
     env:
       NEXPLOIT_TOKEN: ${{ secrets.NEXPLOIT_TOKEN }}
-      NEXPLOIT_REPEATER: ${{ secrets.NEXPLOIT_REPEATER }}
     run: crystal spec
 ```
 

@@ -5,13 +5,12 @@ module SecTester
     Log = SecTester::Log.for("Test")
 
     @token : String
-    @repeater : String
 
     @repeater_process : Process
     @scan : Scan
 
-    def initialize(@token : String, @repeater : String)
-      @scan = Scan.new(token: @token, repeater: @repeater)
+    def initialize(@token : String)
+      @scan = Scan.new(token: @token)
       @repeater_process = start_repeater
       sleep 10.seconds # Let repeatr start
       raise SecTester::Error.new("Repeater process isn't running: #{repeater_output}") unless @repeater_process.exists?
@@ -22,13 +21,8 @@ module SecTester
         raise SecTester::Error.new("NEXPLOIT_TOKEN environment variable is missing")
       end
 
-      unless repeater = ENV["NEXPLOIT_REPEATER"]?
-        raise SecTester::Error.new("NEXPLOIT_REPEATER environment variable is missing")
-      end
-
       @token = token
-      @repeater = repeater
-      @scan = Scan.new(token: token, repeater: repeater)
+      @scan = Scan.new(token: token)
       @repeater_process = start_repeater
       sleep 10.seconds # Let repeatr start
       raise SecTester::Error.new("Repeater process isn't running: #{repeater_output}") unless @repeater_process.exists?
@@ -41,7 +35,7 @@ module SecTester
       repeater_commands = [
         "nexploit-cli", "repeater",
         "--token", @token,
-        "--id", @repeater,
+        "--id", @scan.repeater,
       ]
 
       repeater_process = ProcessHandler.new

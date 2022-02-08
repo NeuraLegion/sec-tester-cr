@@ -5,11 +5,14 @@ module SecTester
   class Scan
     BASE_URL = ENV["NEXPLOIT_URL"]? || "https://app.neuralegion.com"
 
+    getter repeater : String
+
     @scan_id : String?
     @running : Bool = false
     @issues : Array(String) = Array(String).new
 
-    def initialize(@token : String, @repeater : String)
+    def initialize(@token : String)
+      @repeater = create_repeater
     end
 
     private def get_headers : HTTP::Headers
@@ -25,8 +28,6 @@ module SecTester
     end
 
     def start(scan_name : String, test_name : String | Array(String), target : Target) : String
-      headers = get_headers
-
       new_scan_url = "#{BASE_URL}/api/v1/scans"
 
       file_id = upload_archive(target)
@@ -43,24 +44,7 @@ module SecTester
 
       Log.debug { "Sending body request: #{body}" }
 
-      response = HTTP::Client.post(
-        url: new_scan_url,
-        headers: headers,
-        body: body
-      )
-
-      5.times do
-        if response.status_code >= 500
-          sleep 5
-          response = HTTP::Client.post(
-            url: new_scan_url,
-            headers: headers,
-            body: body
-          )
-        else
-          break
-        end
-      end
+      response = send_with_retry(method: "POST", url: new_scan_url, body: body)
       raise SecTester::Error.new("Error starting scan: #{response.body.to_s}") unless response.status.success?
       @scan_id = JSON.parse(response.body.to_s)["id"].to_s
     end
@@ -76,6 +60,17 @@ module SecTester
         Log.debug { "Polling scan #{@scan_id} - passed #{Time.monotonic - time_started}" }
         response = poll_call
         response_json = JSON.parse(response.body.to_s)
+
+        if on_issue
+          if response_json["issuesLength"].as_i > 0
+            Log.warn { "Scan has #{response_json["issuesLength"]} issues, stop polling".colorize.red }
+            stop
+            get_issues.each do |issue|
+              raise IssueFound.new("Name: #{issue["name"]}, Severity: #{issue["severity"]}")
+            end
+          end
+        end
+
         if (response_json["status"] == "done")
           Log.info { "Scan done, stop polling".colorize.green }
           stop
@@ -88,16 +83,6 @@ module SecTester
             stop
           end
         end
-
-        if on_issue
-          if response_json["issuesLength"].as_i > 0
-            Log.warn { "Scan has #{response_json["issuesLength"]} issues, stop polling".colorize.red }
-            stop
-            get_issues.each do |issue|
-              raise IssueFound.new("Name: #{issue["name"]}, Severity: #{issue["severity"]}")
-            end
-          end
-        end
       end
     end
 
@@ -107,10 +92,10 @@ module SecTester
 
       Log.debug { "Stopping scan #{@scan_id}" }
       headers = get_headers
-      response = HTTP::Client.get(
-        url: stop_url,
-        headers: headers
-      )
+      # Stop Scan
+      send_with_retry(method: "GET", url: stop_url)
+      # Remove Repeater
+      remove_repeater
     end
 
     private def upload_archive(target : Target, discard : Bool = true) : String # this returns an archive ID
@@ -131,67 +116,69 @@ module SecTester
         headers["Content-Type"] = builder.content_type
       end
 
-      response = HTTP::Client.post(
-        url: archive_url,
-        headers: headers,
-        body: body_io.to_s
-      )
+      response = send_with_retry(method: "POST", url: archive_url, headers: headers, body: body_io.to_s)
 
-      5.times do
-        if response.status_code >= 500
-          sleep 5
-          response = HTTP::Client.post(
-            url: archive_url,
-            headers: headers,
-            body: body_io.to_s
-          )
-        else
-          break
-        end
-      end
       Log.debug { "Uploaded archive to #{BASE_URL}/api/v1/files?discard=#{discard} response: #{response.body.to_s}" }
       JSON.parse(response.body.to_s)["id"].to_s
+    end
+
+    # Auto generate repeater for the scan
+    private def create_repeater : String
+      repeater_url = "#{BASE_URL}/api/v1/repeaters"
+      repeater_name = Random::Secure.hex
+
+      body = {
+        "active":      true,
+        "description": "Auto generated repeater",
+        "name":        repeater_name,
+      }.to_json
+
+      # Create a repeater
+      send_with_retry(method: "POST", url: repeater_url, body: body)
+
+      # Fetch repeater ID by name
+      response = send_with_retry(method: "GET", url: repeater_url)
+      repeater_id = JSON.parse(response.body.to_s).as_a.find { |repeater| repeater["name"] == repeater_name }.try &.["id"].to_s
+      raise SecTester::Error.new("Error creating repeater: #{response.body.to_s}") unless repeater_id
+      repeater_id
+    end
+
+    private def remove_repeater
+      repeater_url = "#{BASE_URL}/api/v1/repeaters/#{@repeater}"
+
+      send_with_retry(method: "DELETE", url: repeater_url)
     end
 
     private def get_issues : Array(JSON::Any)
       issues_url = "#{BASE_URL}/api/v1/scans/#{@scan_id}/issues"
 
-      headers = get_headers
-      response = HTTP::Client.get(
-        url: issues_url,
-        headers: headers
-      )
-
-      5.times do
-        if response.status_code >= 500
-          sleep 5
-          response = HTTP::Client.get(
-            url: issues_url,
-            headers: headers
-          )
-        else
-          break
-        end
-      end
-
+      response = send_with_retry("GET", issues_url)
       JSON.parse(response.body.to_s).as_a
     end
 
     private def poll_call : HTTP::Client::Response
       poll_url = "#{BASE_URL}/api/v1/scans/#{@scan_id}"
 
-      headers = get_headers
-      response = HTTP::Client.get(
-        url: poll_url,
-        headers: headers
+      send_with_retry("GET", poll_url)
+    end
+
+    private def send_with_retry(method : String, url : String, headers : HTTP::Headers = get_headers, body : HTTP::Client::BodyType = nil) : HTTP::Client::Response
+      response = HTTP::Client.exec(
+        method: method,
+        url: url,
+        headers: headers,
+        body: body
       )
 
       5.times do
         if response.status_code >= 500
+          Log.warn { "Retrying #{method} #{url} - #{response.status_code} - #{response.body.to_s}" }
           sleep 5
-          response = HTTP::Client.get(
-            url: poll_url,
-            headers: headers
+          response = HTTP::Client.exec(
+            method: method,
+            url: url,
+            headers: headers,
+            body: body
           )
         else
           break
