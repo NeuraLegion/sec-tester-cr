@@ -71,22 +71,25 @@ module SecTester
                 str << "Name: ".colorize.cyan.bold
                 str << issue["name"].colorize.white.bold
                 str << "\n"
-                str << "Severity: ".colorize.red.bold
-                str << issue["severity"].colorize.white.bold
+                str << "Severity: ".colorize.cyan.bold
+                str << color_severity(issue["severity"].as_s)
                 str << "\n"
-                str << "CWE: ".colorize.cyan.bold
-                str << issue["cwe"].colorize.white.bold
+                str << "Remediation: ".colorize.cyan.bold
+                str << issue["remedy"].to_s.gsub("\n", " ").colorize.white.bold
                 str << "\n"
                 str << "Details: ".colorize.cyan.bold
                 str << issue["details"].to_s.gsub("\n", " ").colorize.white.bold
                 str << "\n"
-                str << "Remediation: ".colorize.green.bold
-                str << issue["remedy"].to_s.gsub("\n", " ").colorize.white.bold
+                str << "Extra Details: ".colorize.cyan.bold
+                issue["comments"].as_a.each do |comment|
+                  str << comment.to_s.gsub("\n", " ").colorize.white.bold
+                  str << "\n"
+                end
                 str << "\n"
                 str << "Link to Issue: ".colorize.cyan.bold
                 str << "#{BASE_URL}/scans/#{@scan_id}/issues/#{issue["id"]}".colorize.blue.bold
                 str << "\n"
-                str << "Additional Info: ".colorize.cyan.bold
+                str << "External Resources: ".colorize.cyan.bold
                 str << issue["resources"].as_a.join(", ").colorize.blue.bold
                 str << "\n"
               end
@@ -121,6 +124,19 @@ module SecTester
       send_with_retry(method: "GET", url: stop_url)
       # Remove Repeater
       remove_repeater
+    end
+
+    private def color_severity(severity : String)
+      case severity.downcase
+      when "low"
+        severity.colorize.blue.bold
+      when "medium"
+        severity.colorize.yellow.bold
+      when "high"
+        severity.colorize.red.bold
+      else
+        severity
+      end
     end
 
     private def upload_archive(target : Target, discard : Bool = true) : String # this returns an archive ID
