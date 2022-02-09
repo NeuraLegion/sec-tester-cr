@@ -68,26 +68,26 @@ module SecTester
             get_issues.each do |issue|
               message = String.build do |str|
                 str << "\n"
-                str << "Name: ".colorize.red.bold
+                str << "Name: ".colorize.cyan.bold
                 str << issue["name"].colorize.white.bold
                 str << "\n"
                 str << "Severity: ".colorize.red.bold
                 str << issue["severity"].colorize.white.bold
                 str << "\n"
-                str << "CWE: ".colorize.red.bold
+                str << "CWE: ".colorize.cyan.bold
                 str << issue["cwe"].colorize.white.bold
                 str << "\n"
-                str << "Details: ".colorize.red.bold
+                str << "Details: ".colorize.cyan.bold
                 str << issue["details"].to_s.gsub("\n", " ").colorize.white.bold
                 str << "\n"
-                str << "Remediation: ".colorize.red.bold
+                str << "Remediation: ".colorize.green.bold
                 str << issue["remedy"].to_s.gsub("\n", " ").colorize.white.bold
                 str << "\n"
-                str << "Link to Issue: ".colorize.red.bold
-                str << "#{BASE_URL}/scans/#{@scan_id}/issues/#{issue["id"]}".colorize.white.bold
+                str << "Link to Issue: ".colorize.cyan.bold
+                str << "#{BASE_URL}/scans/#{@scan_id}/issues/#{issue["id"]}".colorize.blue.bold
                 str << "\n"
-                str << "Additional Info: ".colorize.red.bold
-                str << issue["resources"].as_a.join(", ").colorize.white.bold
+                str << "Additional Info: ".colorize.cyan.bold
+                str << issue["resources"].as_a.join(", ").colorize.blue.bold
                 str << "\n"
               end
               Log.warn { message }
@@ -197,7 +197,7 @@ module SecTester
 
       5.times do
         if response.status_code >= 500
-          Log.warn { "Retrying #{method} #{url} - #{response.status_code} - #{response.body.to_s}" }
+          Log.error { "Retrying #{method} #{url} - #{response.status_code} - #{response.body.to_s}" }
           sleep 5
           response = HTTP::Client.exec(
             method: method,

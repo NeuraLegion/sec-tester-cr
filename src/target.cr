@@ -9,6 +9,7 @@ module SecTester
     getter body : String
     getter response_headers : HTTP::Headers
     getter response_body : String
+    getter response_status : Int32
 
     def initialize(@url : String)
       @method = "GET"
@@ -17,6 +18,7 @@ module SecTester
       @body = ""
       @response_headers = HTTP::Headers.new
       @response_body = ""
+      @response_status = 200
     end
 
     def initialize(
@@ -25,12 +27,13 @@ module SecTester
       @headers : HTTP::Headers = HTTP::Headers.new,
       @body : String = "",
       @response_headers : HTTP::Headers = HTTP::Headers.new,
-      @response_body : String = ""
+      @response_body : String = "",
+      @response_status : Int32 = 200
     )
     end
 
     def to_har : String
-      HAR::Data.new(
+      har = HAR::Data.new(
         log: HAR::Log.new(
           entries: [
             HAR::Entry.new(
@@ -39,7 +42,10 @@ module SecTester
                 url: @url,
                 http_version: "HTTP/1.1",
                 headers: @headers.map { |k, v| HAR::Header.new(name: k, value: v.first) },
-                post_data: HAR::PostData.new(text: @body)
+                post_data: HAR::PostData.new(
+                  text: @body,
+                  mime_type: @headers["Content-Type"]? || ""
+                )
               ),
               response: HAR::Response.new(
                 status: 200,
@@ -49,12 +55,21 @@ module SecTester
                 content: HAR::Content.new(
                   size: 0,
                   text: @response_body
-                )
-              )
+                ),
+                redirect_url: ""
+              ),
+              time: 0.0,
+              timings: HAR::Timings.new(
+                send: 0.0,
+                wait: 0.0,
+                receive: 0.0
+              ),
             ),
           ]
         )
-      ).to_json
+      )
+      Log.debug { "Har: #{har.to_json}" }
+      har.to_json
     end
   end
 end
