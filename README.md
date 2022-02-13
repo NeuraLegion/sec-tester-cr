@@ -183,4 +183,4 @@ Specifically look at the [Flow Specs](https://github.com/bararchy/lucky_sec_test
 
 ## Contributors
 
-- [Bar Hofesh](https://github.com/bararchy) - creator and maintainer
+* [Bar Hofesh](https://github.com/bararchy) - creator and maintainer
