@@ -27,15 +27,18 @@ module SecTester
       headers
     end
 
-    def start(scan_name : String, test_name : String | Array(String), target : Target) : String
+    def start(scan_name : String, tests : String | Array(String)?, target : Target) : String
       new_scan_url = "#{BASE_URL}/api/v1/scans"
 
       file_id = upload_archive(target)
 
+      # The API supports only Nil or Array(String) so we normalize the input
+      tests = [tests] if tests.is_a?(String)
+
       body = {
         "name":                 scan_name,
         "module":               "dast",
-        "tests":                (test_name.is_a?(String) ? [test_name] : test_name),
+        "tests":                tests,
         "fileId":               file_id,
         "repeaters":            [@repeater],
         "attackParamLocations": ["body", "query", "fragment"],

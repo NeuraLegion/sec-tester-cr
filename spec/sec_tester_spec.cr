@@ -27,7 +27,7 @@ describe SecTester::Test do
     expect_raises(SecTester::IssueFound) do
       tester.run_check(
         scan_name: "UnitTestingScan - XSS",
-        test_name: "xss",
+        tests: "xss",
         target: SecTester::Target.new(
           method: "GET",
           url: "http://#{addr}/?name=jhon",
@@ -64,7 +64,7 @@ describe SecTester::Test do
     expect_raises(SecTester::IssueFound) do
       tester.run_check(
         scan_name: "UnitTestingScan - XSS + OSI",
-        test_name: ["xss", "osi"],
+        tests: ["xss", "osi"],
         target: SecTester::Target.new(
           method: "GET",
           url: "http://#{addr}/?name=jhon",

@@ -55,7 +55,7 @@ it "tests my app for XSS" do
   tester = SecTester::Test.new
   tester.run_check(
     scan_name: "UnitTestingScan - XSS",
-    test_name: "xss",
+    tests: "xss",
     target: SecTester::Target.new("http://#{addr}/?name=jhon")
   )
 ensure
@@ -65,17 +65,88 @@ end
 
 ```
 
-### Manual target configurations
+### Target Response Configurations
 
 The following example shows how to configure a target manually.
 this is very useful to control expected response from the target.
+
+* PRO-TIP: configuring the response information is very important for the scanner to work properly. and can decrease scan times and improve the accuracy of the scan.
 
 ```crystal
 target: SecTester::Target.new(
   method: "GET",
   url: "http://#{addr}/?name=jhon",
-  response_headers: HTTP::Headers{"Content-Type" => "text/html"}
+  response_headers: HTTP::Headers{"Content-Type" => "text/html"},
+  response_body: "<html><body><h1>Hello, world!</h1><p>jhon</p></body></html>",
+  response_status: 200
   )
+```
+
+### Choosing the right tests
+
+When configuring the target you can choose which tests to run.
+This is done using the `tests:` option.
+This option can be a string or an array of strings.
+
+```crystal
+  # single test
+  tests: "xss"
+
+  # multiple tests
+  tests: ["xss", "sqli"]
+```
+
+It's also possible to run all tests by using `nil` option. but it is not recommended.
+A quick rule of thumb is thinking about the actual technologies used in the target.
+So for example, if the target is using SQL Database, you should run the SQLi test.
+Otherwise, if the target is using an HTML rendering engine, you should run the XSS test.
+
+All currently available tests are listed below:
+
+```json
+[
+  "jwt",
+  "broken_saml_auth",
+  "brute_force_login",
+  "common_files",
+  "cookie_security",
+  "csrf",
+  "xss",
+  "default_login_location",
+  "directory_listing",
+  "dom_xss",
+  "email_injection",
+  "file_upload",
+  "full_path_disclosure",
+  "header_security",
+  "html_injection",
+  "http_method_fuzzing",
+  "improper_asset_management",
+  "insecure_tls_configuration",
+  "ldapi",
+  "lfi",
+  "nosql",
+  "open_buckets",
+  "open_database",
+  "osi",
+  "proto_pollution",
+  "rfi",
+  "secret_tokens",
+  "ssti",
+  "server_side_js_injection",
+  "ssrf",
+  "sqli",
+  "unvalidated_redirect",
+  "version_control_systems",
+  "wordpress",
+  "xxe",
+  "xpathi",
+  "business_constraint_bypass",
+  "date_manipulation",
+  "id_enumeration",
+  "mass_assignment",
+  "retire_js"
+]
 ```
 
 ### Integrating into the CI

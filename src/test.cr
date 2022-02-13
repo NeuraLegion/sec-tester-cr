@@ -51,14 +51,14 @@ module SecTester
       end
     end
 
-    def run_check(scan_name : String, test_name : String | Array(String), target : Target)
-      Log.info { "Running check #{test_name} on #{target}" }
+    def run_check(scan_name : String, tests : String | Array(String)?, target : Target)
+      Log.info { "Running check #{tests} on #{target}" }
 
       # Verify Repeater process
       raise SecTester::Error.new("Repeater process isn't running: #{repeater_output}") unless @repeater_process.exists?
 
       # Start a new scan
-      scan_id = @scan.start(scan_name: scan_name, test_name: test_name, target: target)
+      scan_id = @scan.start(scan_name: scan_name, tests: tests, target: target)
 
       Log.info { "Scan process started, polling on results with scan ID: #{scan_id}" }
       # Polling for scan results
