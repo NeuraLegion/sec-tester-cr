@@ -5,7 +5,7 @@ require "./test.cr"
 
 module SecTester
   Log     = ::Log.for("SecTester")
-  VERSION = "1.1.1"
+  VERSION = "1.1.2"
 
   backend = ::Log::IOBackend.new(STDOUT)
 
