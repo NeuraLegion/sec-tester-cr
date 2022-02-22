@@ -21,11 +21,7 @@ module SecTester
         raise SecTester::Error.new("NEXPLOIT_TOKEN environment variable is missing")
       end
 
-      @token = token
-      @scan = Scan.new(token: token)
-      @repeater_process = start_repeater
-      sleep 10.seconds # Let repeatr start
-      raise SecTester::Error.new("Repeater process isn't running: #{repeater_output}") unless @repeater_process.exists?
+      initialize(token)
     end
 
     # method to start and spawn the repeater process

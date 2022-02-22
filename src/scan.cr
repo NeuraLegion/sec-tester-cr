@@ -47,7 +47,30 @@ module SecTester
 
       Log.debug { "Sending body request: #{body}" }
 
-      response = send_with_retry(method: "POST", url: new_scan_url, body: body)
+      # Add UTM Info
+      uri = URI.parse(new_scan_url)
+      ci_name = case
+                when ENV["GITLAB_CI"]?
+                  "GITLAB_CI"
+                when ENV["CIRCLECI"]?
+                  "CIRCLECI"
+                when ENV["GITHUB_ACTION"]?
+                  "GITHUB_ACTION"
+                when ENV["JENKINS_HOME"]?
+                  "JENKINS_CI"
+                when ENV["TRAVIS"]?
+                  "TRAVIS"
+                else
+                  if ENV["CI"]?
+                    "UNKNOWN_CI"
+                  else
+                    "UNKNOWN"
+                  end
+                end
+
+      uri.query = "utm_source=unit_test&utm_medium=#{ci_name}&utm_campaign=sec_tester"
+
+      response = send_with_retry(method: "POST", url: uri.to_s, body: body)
       raise SecTester::Error.new("Error starting scan: #{response.body.to_s}") unless response.status.success?
       @scan_id = JSON.parse(response.body.to_s)["id"].to_s
     end
