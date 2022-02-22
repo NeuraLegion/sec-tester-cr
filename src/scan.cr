@@ -152,6 +152,14 @@ module SecTester
       remove_repeater
     end
 
+    # method to check if repeater is up and running
+    def repeater_running? : Bool
+      repeater_url = "#{BASE_URL}/api/v1/repeaters/#{@repeater}"
+
+      response = send_with_retry(method: "GET", url: repeater_url)
+      JSON.parse(response.body.to_s)["status"].to_s == "connected"
+    end
+
     private def color_severity(severity : String)
       case severity.downcase
       when "low"

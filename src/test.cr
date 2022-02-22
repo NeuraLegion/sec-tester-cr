@@ -12,7 +12,7 @@ module SecTester
     def initialize(@token : String)
       @scan = Scan.new(token: @token)
       @repeater_process = start_repeater
-      sleep 10.seconds # Let repeatr start
+      wait_for_repeater
       raise SecTester::Error.new("Repeater process isn't running: #{repeater_output}") unless @repeater_process.exists?
     end
 
@@ -67,6 +67,14 @@ module SecTester
 
     private def repeater_output : String
       (@repeater_process.error? || @repeater_process.output?).to_s
+    end
+
+    private def wait_for_repeater
+      10.times do |i|
+        break if @scan.repeater_running?
+        sleep 1.second
+        Log.debug { "Waiting for repeater to start, waited #{i} seconds" }
+      end
     end
   end
 end
