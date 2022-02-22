@@ -19,4 +19,7 @@ module SecTester
   class IssueFound < Exception; end
 
   class Timeout < Exception; end
+
+  # Check if the nexploit-cli is available, if not raise an error.
+  {% system("command -v nexploit-cli") %} # ⚠️ nexploit-cli not found. Please install it using: npm install -g @neuralegion/nexploit-cli ⚠️
 end
