@@ -11,14 +11,18 @@ module SecTester
     property response_body : String
     property response_status : Int32
 
-    def initialize(@url : String)
-      @method = "GET"
-      @headers = HTTP::Headers.new
-      @headers["Host"] = URI.parse(@url).hostname.to_s
-      @body = ""
-      @response_headers = HTTP::Headers.new
-      @response_body = ""
-      @response_status = 200
+    def initialize(url : String)
+      headers = HTTP::Headers.new
+      headers["Host"] = URI.parse(@url).hostname.to_s
+      initialize(
+        method: "GET",
+        url: url,
+        headers: headers,
+        body: "",
+        response_headers: HTTP::Headers.new,
+        response_body: "",
+        response_status: 200
+      )
     end
 
     def initialize(
@@ -30,6 +34,7 @@ module SecTester
       @response_body : String = "",
       @response_status : Int32 = 200
     )
+      verify_url
     end
 
     def to_har : String
@@ -70,6 +75,12 @@ module SecTester
       )
       Log.debug { "Har: #{har.to_json}" }
       har.to_json
+    end
+
+    private def verify_url
+      uri = URI.parse(@url)
+      raise Error.new("Invalid URL passed to target: #{@url}") unless uri.scheme
+      raise Error.new("Invalid URL passed to target: #{@url}") unless uri.host
     end
   end
 end
