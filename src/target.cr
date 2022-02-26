@@ -3,13 +3,13 @@ require "uri"
 
 module SecTester
   class Target
-    getter url : String
-    getter method : String
-    getter headers : HTTP::Headers
-    getter body : String
-    getter response_headers : HTTP::Headers
-    getter response_body : String
-    getter response_status : Int32
+    property url : String
+    property method : String
+    property headers : HTTP::Headers
+    property body : String
+    property response_headers : HTTP::Headers
+    property response_body : String
+    property response_status : Int32
 
     def initialize(@url : String)
       @method = "GET"
