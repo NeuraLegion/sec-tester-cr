@@ -91,7 +91,7 @@ module SecTester
     end
 
     private def verify_method
-      raise Error.new("Invalid method passed to target: #{@method}") unless @method.in?(ACCEPTED_METHODS)
+      raise Error.new("Invalid method passed to target: #{@method}") unless @method.upcase.in?(ACCEPTED_METHODS)
     end
 
     private def verify_url
