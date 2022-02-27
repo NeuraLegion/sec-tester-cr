@@ -3,6 +3,8 @@ require "uri"
 
 module SecTester
   class Target
+    ACCEPTED_METHODS = {"GET", "PUT", "POST", "PATCH", "DELETE", "COPY", "HEAD", "OPTIONS", "LINK", "UNLINK", "PURGE", "LOCK", "UNLOCK", "PROPFIND", "VIEW"}
+
     property url : String
     property method : String
     property headers : HTTP::Headers
@@ -35,9 +37,11 @@ module SecTester
       @response_status : Int32 = 200
     )
       verify_url
+      verify_method
     end
 
     def to_har : String
+      verify_method
       har = HAR::Data.new(
         log: HAR::Log.new(
           entries: [
@@ -77,10 +81,19 @@ module SecTester
       har.to_json
     end
 
+    private def verify_method
+      raise Error.new("Invalid method passed to target: #{@method}") unless @method.in?(ACCEPTED_METHODS)
+    end
+
     private def verify_url
       uri = URI.parse(@url)
-      raise Error.new("Invalid URL passed to target: #{@url}") unless uri.scheme
-      raise Error.new("Invalid URL passed to target: #{@url}") unless uri.host
+      if uri.scheme.nil? || uri.scheme.to_s.empty?
+        raise Error.new("Invalid URL passed to target: #{@url}")
+      end
+
+      if uri.host.nil? || uri.host.to_s.empty?
+        raise Error.new("Invalid URL passed to target: #{@url}")
+      end
     end
   end
 end

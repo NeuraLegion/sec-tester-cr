@@ -1,6 +1,36 @@
 require "./spec_helper"
 require "http"
 require "uri"
+require "har"
+
+describe SecTester::Target do
+  it "should be able to create a new target" do
+    target = SecTester::Target.new("http://www.google.com")
+    target.url.should eq("http://www.google.com")
+    target.method.should eq("GET")
+  end
+
+  it "generate proper HAR file" do
+    target = SecTester::Target.new("http://www.google.com")
+    har = HAR.from_string(target.to_har)
+    har.entries.size.should eq(1)
+    har.entries.first.request.url.should eq("http://www.google.com")
+    har.entries.first.request.method.should eq("GET")
+  end
+
+  it "raises on faulty scheme" do
+    expect_raises(SecTester::Error) do
+      target = SecTester::Target.new("www.google.com")
+    end
+
+  end
+
+  it "raises on missing host" do
+    expect_raises(SecTester::Error) do
+      target = SecTester::Target.new("http://")
+    end
+  end
+end
 
 describe SecTester::Test do
   it "starts a new scan for XSS" do
