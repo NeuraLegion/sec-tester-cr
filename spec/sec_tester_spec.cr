@@ -22,7 +22,6 @@ describe SecTester::Target do
     expect_raises(SecTester::Error) do
       target = SecTester::Target.new("www.google.com")
     end
-
   end
 
   it "raises on missing host" do
