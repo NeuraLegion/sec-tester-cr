@@ -13,13 +13,13 @@ module SecTester
 
     def initialize(url : String)
       headers = HTTP::Headers.new
-      headers["Host"] = URI.parse(@url).hostname.to_s
+      headers["Host"] = URI.parse(url).hostname.to_s
       initialize(
         method: "GET",
         url: url,
         headers: headers,
         body: "",
-        response_headers: HTTP::Headers.new,
+        response_headers: HTTP::Headers{"Content-Type" => "text/html"},
         response_body: "",
         response_status: 200
       )

@@ -66,9 +66,7 @@ describe SecTester::Test do
         scan_name: "UnitTestingScan - XSS + OSI",
         tests: ["xss", "osi"],
         target: SecTester::Target.new(
-          method: "GET",
           url: "http://#{addr}/?name=jhon",
-          response_headers: HTTP::Headers{"Content-Type" => "text/html"}
         )
       )
     end
