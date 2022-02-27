@@ -33,7 +33,7 @@ describe SecTester::Target do
   it "raises on wrong method" do
     expect_raises(SecTester::Error) do
       target = SecTester::Target.new(
-        method: "get",
+        method: "blabla",
         url: "http://www.google.com"
       )
     end

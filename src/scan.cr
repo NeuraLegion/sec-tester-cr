@@ -73,6 +73,8 @@ module SecTester
       response = send_with_retry(method: "POST", url: uri.to_s, body: body)
       raise SecTester::Error.new("Error starting scan: #{response.body.to_s}") unless response.status.success?
       @scan_id = JSON.parse(response.body.to_s)["id"].to_s
+    rescue e : JSON::ParseException
+      raise SecTester::Error.new("Error starting new scan: #{e.message} response: #{response.try &.body.to_s}")
     end
 
     def poll(on_issue : Bool = false, timeout : Time::Span? = nil, interval : Time::Span = 30.seconds)
@@ -158,6 +160,8 @@ module SecTester
 
       response = send_with_retry(method: "GET", url: repeater_url)
       JSON.parse(response.body.to_s)["status"].to_s == "connected"
+    rescue e : JSON::ParseException
+      raise SecTester::Error.new("Error checking repeater status: #{e.message} response: #{response.try &.body.to_s}")
     end
 
     private def color_severity(severity : String)
@@ -195,6 +199,8 @@ module SecTester
 
       Log.debug { "Uploaded archive to #{BASE_URL}/api/v1/files?discard=#{discard} response: #{response.body.to_s}" }
       JSON.parse(response.body.to_s)["id"].to_s
+    rescue e : JSON::ParseException
+      raise SecTester::Error.new("Error uploading archive: #{e.message} response: #{response.try &.body.to_s}")
     end
 
     # Auto generate repeater for the scan
@@ -216,6 +222,8 @@ module SecTester
       repeater_id = JSON.parse(response.body.to_s).as_a.find { |repeater| repeater["name"] == repeater_name }.try &.["id"].to_s
       raise SecTester::Error.new("Error creating repeater: #{response.body.to_s}") unless repeater_id
       repeater_id
+    rescue e : JSON::ParseException
+      raise SecTester::Error.new("Error creating repeater: #{e.message} response: #{response.try &.body.to_s}")
     end
 
     private def remove_repeater
@@ -229,6 +237,8 @@ module SecTester
 
       response = send_with_retry("GET", issues_url)
       JSON.parse(response.body.to_s).as_a
+    rescue e : JSON::ParseException
+      raise SecTester::Error.new("Error getting issue data: #{e.message} response: #{response.try &.body.to_s}")
     end
 
     private def poll_call : HTTP::Client::Response
