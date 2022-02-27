@@ -47,7 +47,7 @@ module SecTester
           entries: [
             HAR::Entry.new(
               request: HAR::Request.new(
-                method: @method,
+                method: @method.upcase,
                 url: @url,
                 http_version: "HTTP/1.1",
                 headers: @headers.map { |k, v| HAR::Header.new(name: k, value: v.first) },

@@ -29,6 +29,15 @@ describe SecTester::Target do
       target = SecTester::Target.new("http://")
     end
   end
+
+  it "raises on wrong method" do
+    expect_raises(SecTester::Error) do
+      target = SecTester::Target.new(
+        method: "get",
+        url: "http://www.google.com"
+      )
+    end
+  end
 end
 
 describe SecTester::Test do
