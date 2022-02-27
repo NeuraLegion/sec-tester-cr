@@ -36,6 +36,15 @@ module SecTester
       @response_body : String = "",
       @response_status : Int32 = 200
     )
+      # Small hack to ensure localhost scans run
+      # the NL\BrightSec scanner doesn't allow for `localhost` as a hostname
+      if URI.parse(@url).host == "localhost"
+        uri = URI.parse(@url)
+        uri.host = "127.0.0.1"
+        @url = uri.to_s
+      end
+
+      # Verify method and url
       verify_url
       verify_method
     end
