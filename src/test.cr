@@ -65,6 +65,41 @@ module SecTester
       )
     end
 
+    def run_check(scan_name : String, tests : String | Array(String)?)
+      # Start a server for the user, in this form we can test specific functions.
+      payload = Channel(String).new
+      response = Channel(String).new
+
+      server = HTTP::Server.new do |context|
+        input = URI.decode_www_form(context.request.query_params["artificial"]?.to_s)
+        payload.send(input)
+        context.response.content_type = "text/html"
+        context.response << <<-EOF
+          <html>
+            <body>
+            #{response.receive}
+            </body>
+          </html>
+          EOF
+      end
+
+      addr = server.bind_unused_port
+      spawn do
+        server.listen
+      end
+
+      target = Target.new(
+        url: "http://#{addr}?artificial=dummydata",
+      )
+
+      yield payload, response
+      run_check(scan_name: scan_name, tests: tests, target: target)
+    ensure
+      payload.try &.close
+      response.try &.close
+      server.try &.close
+    end
+
     private def repeater_output : String
       (@repeater_process.error? || @repeater_process.output?).to_s
     end

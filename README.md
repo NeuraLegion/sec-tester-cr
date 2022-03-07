@@ -82,6 +82,27 @@ target: SecTester::Target.new(
   )
 ```
 
+### Testing Single Function
+
+The following example shows how to test a single function.
+
+```crystal
+tester.run_check(scan_name: "UnitTestingScan - XSS - function only", tests: ["xss"]) do |payload, response|
+  spawn do
+    while payload_data = payload.receive?
+      # This is where we send the payload to the function and send back a response
+      # In this example we just want to send back the payload
+      # as we are testing reflection
+      # my_function is a demo function that returns the payload
+      response_data = my_function(payload_data)
+
+      # we end up sending the response back to the channel
+      response.send(response_data)
+    end
+  end
+end
+```
+
 ### Choosing the right tests
 
 When configuring the target you can choose which tests to run.
