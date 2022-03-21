@@ -1,11 +1,10 @@
 require "log"
-require "./process_handler.cr"
 require "./target.cr"
 require "./test.cr"
 
 module SecTester
   Log     = ::Log.for("SecTester")
-  VERSION = "1.2.0"
+  VERSION = "1.2.1"
 
   backend = ::Log::IOBackend.new(STDOUT)
 

@@ -6,6 +6,9 @@ module SecTester
 
     @token : String
 
+    @repeater_error = IO::Memory.new
+    @repeater_output = IO::Memory.new
+
     @repeater_process : Process
     @scan : Scan
 
@@ -13,7 +16,10 @@ module SecTester
       @scan = Scan.new(token: @token)
       @repeater_process = start_repeater
       wait_for_repeater
-      raise SecTester::Error.new("Repeater process isn't running: #{repeater_output}") unless @repeater_process.exists?
+      unless @repeater_process.exists?
+        Log.error { "Repeater isn't up, can't start scan: #{repeater_output}" }
+        raise SecTester::Error.new("Repeater process isn't running: #{repeater_output}")
+      end
     end
 
     def initialize
@@ -34,8 +40,7 @@ module SecTester
         "--id", @scan.repeater,
       ]
 
-      repeater_process = ProcessHandler.new
-      repeater_process.spawn_process(repeater_commands)
+      Process.new("/usr/bin/env", repeater_commands, output: @repeater_output, error: @repeater_error)
     end
 
     def cleanup
@@ -100,8 +105,8 @@ module SecTester
       server.try &.close
     end
 
-    private def repeater_output : String
-      (@repeater_process.error? || @repeater_process.output?).to_s
+    private def repeater_output
+      @repeater_error.to_s.presence || @repeater_output.to_s.presence
     end
 
     private def wait_for_repeater
