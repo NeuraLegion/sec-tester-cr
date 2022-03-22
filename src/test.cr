@@ -15,11 +15,6 @@ module SecTester
     def initialize(@token : String)
       @scan = Scan.new(token: @token)
       @repeater_process = start_repeater
-      wait_for_repeater
-      unless @repeater_process.exists?
-        Log.error { "Repeater isn't up, can't start scan: #{repeater_output}" }
-        raise SecTester::Error.new("Repeater process isn't running: #{repeater_output}")
-      end
     end
 
     def initialize
@@ -40,7 +35,26 @@ module SecTester
         "--id", @scan.repeater,
       ]
 
-      Process.new("/usr/bin/env", repeater_commands, output: @repeater_output, error: @repeater_error)
+      # Try to start the repeater process
+      process = Process.new("/usr/bin/env", repeater_commands, output: @repeater_output, error: @repeater_error)
+      wait_for_repeater
+
+      3.times do
+        if process.exists?
+          return process
+        else
+          Log.error { "Repeater isn't up, can't start scan: #{repeater_output}" }
+        end
+        process = Process.new("/usr/bin/env", repeater_commands, output: @repeater_output, error: @repeater_error)
+        wait_for_repeater
+      end
+
+      unless process.exists?
+        Log.error { "Repeater isn't up, can't start scan: #{repeater_output}" }
+        raise SecTester::Error.new("Repeater process isn't running: #{repeater_output}")
+      end
+
+      process
     end
 
     def cleanup
@@ -106,11 +120,11 @@ module SecTester
     end
 
     private def repeater_output
-      @repeater_error.to_s.presence || @repeater_output.to_s.presence
+      @repeater_error.gets_to_end.presence || @repeater_output.gets_to_end.presence
     end
 
     private def wait_for_repeater
-      10.times do |i|
+      20.times do |i|
         break if @scan.repeater_running?
         sleep 1.second
         Log.debug { "Waiting for repeater to start, waited #{i} seconds" }
