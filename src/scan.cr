@@ -12,6 +12,7 @@ module SecTester
     @issues : Array(String) = Array(String).new
 
     def initialize(@token : String)
+      validate_token!
       @repeater = create_repeater
     end
 
@@ -174,6 +175,15 @@ module SecTester
         severity.colorize.red.bold
       else
         severity
+      end
+    end
+
+    private def validate_token!
+      check_user_url = "#{BASE_URL}/api/v1/scans/summary"
+
+      response = send_with_retry(method: "GET", url: check_user_url)
+      if response.status.unauthorized?
+        raise SecTester::Error.new("API token is invalid, please generate a new one response: #{response.try &.body.to_s}")
       end
     end
 
