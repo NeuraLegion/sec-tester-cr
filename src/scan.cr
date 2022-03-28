@@ -29,6 +29,7 @@ module SecTester
     end
 
     def start(scan_name : String, tests : String | Array(String)?, target : Target) : String
+      @running = true
       new_scan_url = "#{BASE_URL}/api/v1/scans"
 
       file_id = upload_archive(target)
@@ -78,7 +79,7 @@ module SecTester
       raise SecTester::Error.new("Error starting new scan: #{e.message} response: #{response.try &.body.to_s}")
     end
 
-    def poll(on_issue : Bool = false, timeout : Time::Span? = nil, interval : Time::Span = 30.seconds)
+    def poll(on_issue : Bool = false, timeout : Time::Span? = nil, interval : Time::Span = 30.seconds, severity_threshold : Severity = :low)
       raise SecTester::Error.new("Cannot poll scan results without scan_id, make sure to 'start' the scan before polling") unless @scan_id
 
       time_started = Time.monotonic
@@ -92,9 +93,16 @@ module SecTester
 
         if on_issue
           if response_json["issuesLength"].as_i > 0
-            Log.warn { "Scan has #{response_json["issuesLength"]} issues, stop polling".colorize.red }
-            stop
+            Log.warn { "Scan has #{response_json["issuesLength"]} issues, Analyzing based on severity: #{severity_threshold}".colorize.yellow }
             get_issues.each do |issue|
+              case severity_threshold
+              when Severity::Medium
+                next unless {"medium", "high"}.any? { |sev| issue["severity"].as_s.downcase == sev }
+              when Severity::High
+                next unless issue["severity"].as_s.downcase == "high"
+              end
+
+              stop
               message = String.build do |str|
                 str << "\n"
                 str << "Name: ".colorize.cyan.bold
@@ -144,15 +152,18 @@ module SecTester
     end
 
     def stop
-      raise SecTester::Error.new("Cannot stop scan without scan_id, make sure to 'start' the scan before stopping") unless @scan_id
-      stop_url = "#{BASE_URL}/api/v1/scans/#{@scan_id}/stop"
+      if @running
+        @running = false
+        raise SecTester::Error.new("Cannot stop scan without scan_id, make sure to 'start' the scan before stopping") unless @scan_id
+        stop_url = "#{BASE_URL}/api/v1/scans/#{@scan_id}/stop"
 
-      Log.debug { "Stopping scan #{@scan_id}" }
-      headers = get_headers
-      # Stop Scan
-      send_with_retry(method: "GET", url: stop_url)
-      # Remove Repeater
-      remove_repeater
+        Log.debug { "Stopping scan #{@scan_id}" }
+        headers = get_headers
+        # Stop Scan
+        send_with_retry(method: "GET", url: stop_url)
+        # Remove Repeater
+        remove_repeater
+      end
     end
 
     # method to check if repeater is up and running

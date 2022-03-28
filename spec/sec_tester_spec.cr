@@ -78,6 +78,56 @@ describe SecTester::Test do
     tester.try &.cleanup
   end
 
+  it "starts a new scan for cookies" do
+    server = HTTP::Server.new do |context|
+      context.response.headers["Set-Cookie"] = "foo=bar"
+    end
+
+    addr = server.bind_unused_port
+    spawn do
+      server.listen
+    end
+
+    tester = SecTester::Test.new
+    expect_raises(SecTester::IssueFound) do
+      tester.run_check(
+        scan_name: "UnitTestingScan - cookie_security",
+        tests: ["cookie_security"],
+        target: SecTester::Target.new(
+          url: "http://#{addr}/",
+        )
+      )
+    end
+  ensure
+    server.try &.close
+    tester.try &.cleanup
+  end
+
+  it "starts a new scan for cookies - Skip low" do
+    server = HTTP::Server.new do |context|
+      context.response.headers["Set-Cookie"] = "foo=bar"
+    end
+
+    addr = server.bind_unused_port
+    spawn do
+      server.listen
+    end
+
+    tester = SecTester::Test.new
+
+    tester.run_check(
+      scan_name: "UnitTestingScan - cookie_security - Skip low",
+      tests: ["cookie_security"],
+      target: SecTester::Target.new(
+        url: "http://#{addr}/",
+      ),
+      severity_threshold: :medium
+    )
+  ensure
+    server.try &.close
+    tester.try &.cleanup
+  end
+
   it "starts a new scan for XSS and OSI" do
     server = HTTP::Server.new do |context|
       name = URI.decode_www_form(context.request.query_params["name"]?.to_s)

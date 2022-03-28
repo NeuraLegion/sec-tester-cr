@@ -1,6 +1,7 @@
 require "log"
 require "./target.cr"
 require "./test.cr"
+require "./severity.cr"
 
 module SecTester
   Log     = ::Log.for("SecTester")

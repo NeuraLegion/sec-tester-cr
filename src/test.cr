@@ -66,7 +66,7 @@ module SecTester
       end
     end
 
-    def run_check(scan_name : String, tests : String | Array(String)?, target : Target)
+    def run_check(scan_name : String, tests : String | Array(String)?, target : Target, severity_threshold : Severity = :low)
       Log.info { "Running check #{tests} on #{target}" }
 
       # Verify Repeater process
@@ -81,10 +81,11 @@ module SecTester
       @scan.poll(
         timeout: 20.minutes,
         on_issue: true,
+        severity_threshold: severity_threshold,
       )
     end
 
-    def run_check(scan_name : String, tests : String | Array(String)?)
+    def run_check(scan_name : String, tests : String | Array(String)?, severity_threshold : Severity = :low)
       # Start a server for the user, in this form we can test specific functions.
       payload = Channel(String).new
       response = Channel(String).new
@@ -112,7 +113,7 @@ module SecTester
       )
 
       yield payload, response
-      run_check(scan_name: scan_name, tests: tests, target: target)
+      run_check(scan_name: scan_name, tests: tests, target: target, severity_threshold: severity_threshold)
     ensure
       payload.try &.close
       response.try &.close
