@@ -103,6 +103,33 @@ tester.run_check(scan_name: "UnitTestingScan - XSS - function only", tests: ["xs
 end
 ```
 
+### Fail by Severity Threshold
+
+When you want to fail the test by severity threshold, you can use the following example.
+
+```crystal
+tester.run_check(
+  scan_name: "UnitTestingScan - cookie_security - Skip low",
+  tests: ["cookie_security"],
+  target: SecTester::Target.new(
+    url: "http://#{addr}/",
+  ),
+  severity_threshold: :medium
+)
+```
+
+The `severity_threshold` is a `:low`, `:medium` or `:high` value. it allows you to not fail the build if the severity is lower than the threshold.
+
+For example if you want to run the test and fail the build if the severity is `:high` but continue testing if it's `:medium` or `:low`. use the following example.
+
+```crystal
+tester.run_check(
+  severity_threshold: :high
+)
+```
+
+If the issues are `:low` or `:medium` the build will continue.
+
 ### Choosing the right tests
 
 When configuring the target you can choose which tests to run.
