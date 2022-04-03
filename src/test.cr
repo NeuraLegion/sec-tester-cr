@@ -35,6 +35,11 @@ module SecTester
         "--id", @scan.repeater,
       ]
 
+      # Fail if can't find nexploit-cli executable
+      unless Process.find_executable(repeater_commands.first)
+        raise SecTester::Error.new("#{repeater_commands.first} executable not found")
+      end
+
       # Try to start the repeater process
       process = Process.new("/usr/bin/env", repeater_commands, output: @repeater_output, error: @repeater_error)
       wait_for_repeater
