@@ -28,7 +28,7 @@ module SecTester
       headers
     end
 
-    def start(scan_name : String, tests : String | Array(String)?, target : Target) : String
+    def start(scan_name : String, tests : String | Array(String)?, target : Target, options : Options) : String
       @running = true
       new_scan_url = "#{BASE_URL}/api/v1/scans"
 
@@ -45,6 +45,9 @@ module SecTester
         "repeaters":            [@repeater],
         "attackParamLocations": ["body", "query", "fragment"],
         "discoveryTypes":       ["archive"],
+        "smart":                options.smart_scan,
+        "skipStaticParams":     options.skip_static_parameters,
+        "projectId":            options.project_id || get_first_project_id,
       }.to_json
 
       Log.debug { "Sending body request: #{body}" }
@@ -196,6 +199,13 @@ module SecTester
       if response.status.unauthorized?
         raise SecTester::Error.new("API token is invalid, please generate a new one response: #{response.try &.body.to_s}")
       end
+    end
+
+    private def get_first_project_id : String
+      response = send_with_retry(method: "GET", url: "#{BASE_URL}/api/v1/projects")
+      JSON.parse(response.body.to_s).as_a.first["id"].to_s
+    rescue e : JSON::ParseException
+      raise SecTester::Error.new("Error getting first project id: #{e.message} response: #{response.try &.body.to_s}")
     end
 
     private def upload_archive(target : Target, discard : Bool = true) : String # this returns an archive ID

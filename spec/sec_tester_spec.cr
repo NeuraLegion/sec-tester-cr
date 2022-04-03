@@ -163,6 +163,45 @@ describe SecTester::Test do
     tester.try &.cleanup
   end
 
+  it "starts a new scan with options" do
+    server = HTTP::Server.new do |context|
+      name = URI.decode_www_form(context.request.query_params["name"]?.to_s)
+
+      context.response.content_type = "text/html"
+      context.response << <<-EOF
+        <html>
+          <body>
+            <h1>Hello, world!</h1>
+            <p>#{name}</p>
+          </body>
+        </html>
+        EOF
+    end
+
+    addr = server.bind_unused_port
+    spawn do
+      server.listen
+    end
+
+    tester = SecTester::Test.new
+    expect_raises(SecTester::IssueFound) do
+      tester.run_check(
+        scan_name: "UnitTestingScan - options",
+        tests: ["xss", "osi"],
+        target: SecTester::Target.new(
+          url: "http://#{addr}/?name=jhon",
+        ),
+        options: SecTester::Options.new(
+          smart_scan: false,
+          skip_static_parameters: false
+        )
+      )
+    end
+  ensure
+    server.try &.close
+    tester.try &.cleanup
+  end
+
   it "starts a function oriented test for XSS" do
     tester = SecTester::Test.new
     expect_raises(SecTester::IssueFound) do

@@ -71,14 +71,14 @@ module SecTester
       end
     end
 
-    def run_check(scan_name : String, tests : String | Array(String)?, target : Target, severity_threshold : Severity = :low)
+    def run_check(scan_name : String, tests : String | Array(String)?, target : Target, severity_threshold : Severity = :low, options : Options = Options.new)
       Log.info { "Running check #{tests} on #{target}" }
 
       # Verify Repeater process
       raise SecTester::Error.new("Repeater process isn't running: #{repeater_output}") unless @repeater_process.exists?
 
       # Start a new scan
-      scan_id = @scan.start(scan_name: scan_name, tests: tests, target: target)
+      scan_id = @scan.start(scan_name: scan_name, tests: tests, target: target, options: options)
 
       Log.info { "Scan process started, polling on results with scan ID: #{scan_id}" }
       # Polling for scan results
@@ -90,7 +90,7 @@ module SecTester
       )
     end
 
-    def run_check(scan_name : String, tests : String | Array(String)?, severity_threshold : Severity = :low)
+    def run_check(scan_name : String, tests : String | Array(String)?, severity_threshold : Severity = :low, options : Options = Options.new)
       # Start a server for the user, in this form we can test specific functions.
       payload = Channel(String).new
       response = Channel(String).new
@@ -118,7 +118,7 @@ module SecTester
       )
 
       yield payload, response
-      run_check(scan_name: scan_name, tests: tests, target: target, severity_threshold: severity_threshold)
+      run_check(scan_name: scan_name, tests: tests, target: target, severity_threshold: severity_threshold, options: options)
     ensure
       payload.try &.close
       response.try &.close
