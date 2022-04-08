@@ -44,6 +44,10 @@ module SecTester
         @url = uri.to_s
       end
 
+      unless @headers["Host"]?
+        @headers["Host"] = URI.parse(@url).hostname.to_s
+      end
+
       # Verify method and url
       verify_url
       verify_method

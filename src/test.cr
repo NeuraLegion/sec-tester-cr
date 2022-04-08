@@ -25,6 +25,8 @@ module SecTester
       initialize(token)
     end
 
+    delegate :scan_duration, to: @scan
+
     # method to start and spawn the repeater process
     def start_repeater : Process
       Log.info { "Starting repeater" }

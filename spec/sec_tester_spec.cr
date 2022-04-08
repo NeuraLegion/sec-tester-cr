@@ -197,6 +197,7 @@ describe SecTester::Test do
         )
       )
     end
+    (tester.scan_duration > 0.seconds).should be_true
   ensure
     server.try &.close
     tester.try &.cleanup

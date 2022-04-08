@@ -6,6 +6,7 @@ module SecTester
     BASE_URL = ENV["NEXPLOIT_URL"]? || "https://app.neuralegion.com"
 
     getter repeater : String
+    getter scan_duration : Time::Span = Time::Span.new
 
     @scan_id : String?
     @running : Bool = false
@@ -93,6 +94,8 @@ module SecTester
         Log.debug { "Polling scan #{@scan_id} - passed #{Time.monotonic - time_started}" }
         response = poll_call
         response_json = JSON.parse(response.body.to_s)
+
+        @scan_duration = response_json["elapsed"].as_i.seconds
 
         if on_issue
           if response_json["issuesLength"].as_i > 0
