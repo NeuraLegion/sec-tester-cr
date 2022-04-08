@@ -95,7 +95,7 @@ module SecTester
         response = poll_call
         response_json = JSON.parse(response.body.to_s)
 
-        @scan_duration = response_json["elapsed"].as_i.seconds
+        @scan_duration = response_json["elapsed"].as_i.milliseconds
 
         if on_issue
           if response_json["issuesLength"].as_i > 0
