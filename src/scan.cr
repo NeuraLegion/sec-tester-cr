@@ -49,6 +49,7 @@ module SecTester
         "smart":                options.smart_scan,
         "skipStaticParams":     options.skip_static_parameters,
         "projectId":            options.project_id || get_first_project_id,
+        "slowEpTimeout":        options.slow_ep_timeout,
       }.to_json
 
       Log.debug { "Sending body request: #{body}" }
