@@ -58,24 +58,24 @@ module SecTester
       uri = URI.parse(new_scan_url)
       ci_name = case
                 when ENV["GITLAB_CI"]?
-                  "GITLAB_CI"
+                  "GITLAB"
                 when ENV["CIRCLECI"]?
                   "CIRCLECI"
                 when ENV["GITHUB_ACTION"]?
                   "GITHUB_ACTION"
                 when ENV["JENKINS_HOME"]?
-                  "JENKINS_CI"
+                  "JENKINS"
                 when ENV["TRAVIS"]?
                   "TRAVIS"
                 else
                   if ENV["CI"]?
-                    "UNKNOWN_CI"
+                    "OTHER"
                   else
                     "UNKNOWN"
                   end
                 end
 
-      uri.query = "utm_source=unit_test&utm_medium=#{ci_name}&utm_campaign=sec_tester"
+      uri.query = "utm_source=utlib&utm_medium=sec_tester_crystal-#{SecTester::VERSION}&utm_campaign=#{ci_name}"
 
       response = send_with_retry(method: "POST", url: uri.to_s, body: body)
       raise SecTester::Error.new("Error starting scan: #{response.body.to_s}") unless response.status.success?
