@@ -38,6 +38,26 @@ module SecTester
       # The API supports only Nil or Array(String) so we normalize the input
       tests = [tests] if tests.is_a?(String)
 
+      # Information about caller
+      ci_name = case
+                when ENV["GITLAB_CI"]?
+                  "gitlab"
+                when ENV["CIRCLECI"]?
+                  "circleci"
+                when ENV["GITHUB_ACTION"]?
+                  "github_actions"
+                when ENV["JENKINS_HOME"]?
+                  "jenkins"
+                when ENV["TRAVIS"]?
+                  "travis"
+                else
+                  if ENV["CI"]?
+                    "other"
+                  else
+                    "unknown"
+                  end
+                end
+
       body = {
         "name":                 scan_name,
         "module":               "dast",
@@ -50,34 +70,19 @@ module SecTester
         "skipStaticParams":     options.skip_static_parameters,
         "projectId":            options.project_id || get_first_project_id,
         "slowEpTimeout":        options.slow_ep_timeout,
+        "info":                 {
+          "source": "utlib",
+          "client": {
+            "name":    "sec_tester_crystal",
+            "version": SecTester::VERSION,
+          },
+          "provider": ci_name,
+        },
       }.to_json
 
       Log.debug { "Sending body request: #{body}" }
 
-      # Add UTM Info
-      uri = URI.parse(new_scan_url)
-      ci_name = case
-                when ENV["GITLAB_CI"]?
-                  "GITLAB"
-                when ENV["CIRCLECI"]?
-                  "CIRCLECI"
-                when ENV["GITHUB_ACTION"]?
-                  "GITHUB_ACTION"
-                when ENV["JENKINS_HOME"]?
-                  "JENKINS"
-                when ENV["TRAVIS"]?
-                  "TRAVIS"
-                else
-                  if ENV["CI"]?
-                    "OTHER"
-                  else
-                    "UNKNOWN"
-                  end
-                end
-
-      uri.query = "utm_source=utlib&utm_medium=sec_tester_crystal-#{SecTester::VERSION}&utm_campaign=#{ci_name}"
-
-      response = send_with_retry(method: "POST", url: uri.to_s, body: body)
+      response = send_with_retry(method: "POST", url: new_scan_url, body: body)
       raise SecTester::Error.new("Error starting scan: #{response.body.to_s}") unless response.status.success?
       @scan_id = JSON.parse(response.body.to_s)["id"].to_s
     rescue e : JSON::ParseException
