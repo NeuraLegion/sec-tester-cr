@@ -11,7 +11,7 @@ For support and help visit the [NeuraLegion Discord](https://discord.gg/jy9BB7tw
    ```yaml
    dependencies:
      sec_tester:
-       github: NeuraLegion/sec_tester
+       github: NeuraLegion/sec-tester-cr
    ```
 
 2. Run `shards install`
