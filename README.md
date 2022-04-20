@@ -1,8 +1,8 @@
-# sec_tester
+# sec-tester-cr
 
-A library to allow the usage of NexPloit security scanner inside of the Crystal SPECS unit testing flow
+A library to allow the usage of Bright security scanner inside of the Crystal SPECS unit testing flow
 
-For support and help visit the [NeuraLegion Discord](https://discord.gg/jy9BB7twtG)
+For support and help visit the [Bright Discord](https://discord.gg/jy9BB7twtG)
 
 ## Installation
 
@@ -239,11 +239,11 @@ steps:
 ### Example Usage
 
 You can see this shard in action at the [Lucky Sec Test](https://github.com/bararchy/lucky_sec_test) repo.
-Specifically look at the [Flow Specs](https://github.com/bararchy/lucky_sec_test/blob/bc70e6c13147d5ccfec6fef9493b09a792fdc434/spec/flows/authentication_spec.cr#L31)
+Specifically look at the [Security Flow Specs](https://github.com/bararchy/lucky_sec_test/blob/main/spec/flows/security_spec.cr)
 
 ## Contributing
 
-1. Fork it (<https://github.com/NeuraLegion/sec_tester/fork>)
+1. Fork it (<https://github.com/NeuraLegion/sec-tester-cr/fork>)
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
