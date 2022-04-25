@@ -70,6 +70,9 @@ describe SecTester::Test do
           method: "GET",
           url: "http://#{addr}/?name=jhon",
           response_headers: HTTP::Headers{"Content-Type" => "text/html"}
+        ),
+        options: SecTester::Options.new(
+          project_id: "7Yx6ovyMj954WHcLvYyWzo",
         )
       )
     end
@@ -95,6 +98,9 @@ describe SecTester::Test do
         tests: ["cookie_security"],
         target: SecTester::Target.new(
           url: "http://#{addr}/",
+        ),
+        options: SecTester::Options.new(
+          project_id: "7Yx6ovyMj954WHcLvYyWzo",
         )
       )
     end
@@ -121,7 +127,10 @@ describe SecTester::Test do
       target: SecTester::Target.new(
         url: "http://#{addr}/",
       ),
-      severity_threshold: :medium
+      severity_threshold: :medium,
+      options: SecTester::Options.new(
+        project_id: "7Yx6ovyMj954WHcLvYyWzo",
+      ),
     )
   ensure
     server.try &.close
@@ -155,6 +164,9 @@ describe SecTester::Test do
         tests: ["xss", "osi"],
         target: SecTester::Target.new(
           url: "http://#{addr}/?name=jhon",
+        ),
+        options: SecTester::Options.new(
+          project_id: "7Yx6ovyMj954WHcLvYyWzo",
         )
       )
     end
@@ -193,7 +205,8 @@ describe SecTester::Test do
         ),
         options: SecTester::Options.new(
           smart_scan: false,
-          skip_static_parameters: false
+          skip_static_parameters: false,
+          project_id: "7Yx6ovyMj954WHcLvYyWzo",
         )
       )
     end
