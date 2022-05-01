@@ -90,6 +90,8 @@ module SecTester
         on_issue: true,
         severity_threshold: severity_threshold,
       )
+    ensure
+      cleanup
     end
 
     def run_check(scan_name : String, tests : String | Array(String)?, severity_threshold : Severity = :low, options : Options = Options.new)

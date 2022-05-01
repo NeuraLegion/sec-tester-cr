@@ -78,7 +78,6 @@ describe SecTester::Test do
     end
   ensure
     server.try &.close
-    tester.try &.cleanup
   end
 
   it "starts a new scan for cookies" do
@@ -106,7 +105,6 @@ describe SecTester::Test do
     end
   ensure
     server.try &.close
-    tester.try &.cleanup
   end
 
   it "starts a new scan for cookies - Skip low" do
@@ -134,7 +132,6 @@ describe SecTester::Test do
     )
   ensure
     server.try &.close
-    tester.try &.cleanup
   end
 
   it "starts a new scan for XSS and OSI" do
@@ -172,7 +169,6 @@ describe SecTester::Test do
     end
   ensure
     server.try &.close
-    tester.try &.cleanup
   end
 
   it "starts a new scan with options" do
@@ -213,7 +209,6 @@ describe SecTester::Test do
     (tester.scan_duration > 0.seconds).should be_true
   ensure
     server.try &.close
-    tester.try &.cleanup
   end
 
   it "starts a function oriented test for XSS" do
@@ -234,8 +229,6 @@ describe SecTester::Test do
         end
       end
     end
-  ensure
-    tester.try &.cleanup
   end
 end
 

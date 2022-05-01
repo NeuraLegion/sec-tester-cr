@@ -123,20 +123,20 @@ module SecTester
                 str << "Severity: ".colorize.cyan.bold
                 str << color_severity(issue["severity"].as_s)
                 str << "\n"
-                str << "Remediation: ".colorize.cyan.bold
-                str << issue["remedy"].to_s.gsub("\n", " ").colorize.white.bold
+                str << "Link to Issue: ".colorize.cyan.bold
+                str << "#{BASE_URL}/scans/#{@scan_id}/issues/#{issue["id"]}".colorize.blue.bold
                 str << "\n"
                 str << "Details: ".colorize.cyan.bold
                 str << issue["details"].to_s.gsub("\n", " ").colorize.white.bold
+                str << "\n"
+                str << "Remediation: ".colorize.cyan.bold
+                str << issue["remedy"].to_s.gsub("\n", " ").colorize.white.bold
                 str << "\n"
                 str << "Extra Details: ".colorize.cyan.bold
                 issue["comments"].as_a.each do |comment|
                   str << comment.to_s.gsub("\n", " ").colorize.white.bold
                   str << "\n"
                 end
-                str << "\n"
-                str << "Link to Issue: ".colorize.cyan.bold
-                str << "#{BASE_URL}/scans/#{@scan_id}/issues/#{issue["id"]}".colorize.blue.bold
                 str << "\n"
                 str << "External Resources: ".colorize.cyan.bold
                 str << issue["resources"].as_a.join(", ").colorize.blue.bold
