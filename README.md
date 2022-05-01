@@ -60,7 +60,6 @@ it "tests my app for XSS" do
   )
 ensure
   server.try &.close
-  tester.try &.cleanup
 end
 
 ```
