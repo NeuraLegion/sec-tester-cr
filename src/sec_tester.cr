@@ -1,5 +1,6 @@
 require "log"
 require "./target.cr"
+require "./tests.cr"
 require "./options.cr"
 require "./test.cr"
 require "./severity.cr"

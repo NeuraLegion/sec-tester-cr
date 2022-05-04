@@ -3,7 +3,7 @@ require "colorize"
 
 module SecTester
   class Scan
-    BASE_URL = ENV["NEXPLOIT_URL"]? || "https://app.neuralegion.com"
+    BASE_URL = ENV["CLUSTER_URL"]? || "https://app.neuralegion.com"
 
     getter repeater : String
     getter scan_duration : Time::Span = Time::Span.new
@@ -30,13 +30,20 @@ module SecTester
     end
 
     def start(scan_name : String, tests : String | Array(String)?, target : Target, options : Options) : String
+      # The API supports only Nil or Array(String) so we normalize the input
+      tests = [tests] if tests.is_a?(String)
+
+      # Unless tests are nil, we need to validate them
+      if tests
+        unless tests.all? { |test| test.in?(SUPPORTED_TESTS) }
+          raise SecTester::Error.new("Unsupported tests: #{tests} (supported: #{SUPPORTED_TESTS})")
+        end
+      end
+
       @running = true
       new_scan_url = "#{BASE_URL}/api/v1/scans"
 
       file_id = upload_archive(target)
-
-      # The API supports only Nil or Array(String) so we normalize the input
-      tests = [tests] if tests.is_a?(String)
 
       # Information about caller
       ci_name = case

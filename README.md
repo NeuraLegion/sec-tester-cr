@@ -25,7 +25,7 @@ To use the library you will first need to
 1. Register for an account at [signup](https://app.neuralegion.com/signup)
 2. install the [nexploit-cli](https://www.npmjs.com/package/@neuralegion/nexploit-cli) utility
 3. Generate an API key from your [UI](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens)
-4. The preferred approach is to setup your API-Key as ENV var `NEXPLOIT_TOKEN` for API key.
+4. The preferred approach is to setup your API-Key as ENV var `BRIGHT_TOKEN` for API key.
 
 ### Use Inside Specs
 
@@ -168,57 +168,11 @@ A quick rule of thumb is thinking about the actual technologies used in the targ
 So for example, if the target is using SQL Database, you should run the SQLi test.
 Otherwise, if the target is using an HTML rendering engine, you should run the XSS test.
 
-All currently available tests are listed below:
-
-```json
-[
-  "jwt",
-  "broken_saml_auth",
-  "brute_force_login",
-  "common_files",
-  "cookie_security",
-  "csrf",
-  "xss",
-  "default_login_location",
-  "directory_listing",
-  "dom_xss",
-  "email_injection",
-  "file_upload",
-  "full_path_disclosure",
-  "header_security",
-  "html_injection",
-  "http_method_fuzzing",
-  "improper_asset_management",
-  "insecure_tls_configuration",
-  "ldapi",
-  "lfi",
-  "nosql",
-  "open_buckets",
-  "open_database",
-  "osi",
-  "proto_pollution",
-  "rfi",
-  "secret_tokens",
-  "ssti",
-  "server_side_js_injection",
-  "ssrf",
-  "sqli",
-  "unvalidated_redirect",
-  "version_control_systems",
-  "wordpress",
-  "xxe",
-  "xpathi",
-  "business_constraint_bypass",
-  "date_manipulation",
-  "id_enumeration",
-  "mass_assignment",
-  "retire_js"
-]
-```
+All currently available tests are listed in the [tests.cr](src/tests.cr) file
 
 ### Integrating into the CI
 
-To integrate this library into the CI you will need to add the `NEXPLOIT_TOKEN` ENV vars to your CI.
+To integrate this library into the CI you will need to add the `BRIGHT_TOKEN` ENV vars to your CI.
 Then add the following to your `github actions` configuration:
 
 ```yml
@@ -231,7 +185,7 @@ steps:
       npm install -g @neuralegion/nexploit-cli --unsafe-perm=true
   - name: Run tests
     env:
-      NEXPLOIT_TOKEN: ${{ secrets.NEXPLOIT_TOKEN }}
+      NEXPLOIT_TOKEN: ${{ secrets.BRIGHT_TOKEN }}
     run: crystal spec
 ```
 

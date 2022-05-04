@@ -18,8 +18,8 @@ module SecTester
     end
 
     def initialize
-      unless token = ENV["NEXPLOIT_TOKEN"]?
-        raise SecTester::Error.new("NEXPLOIT_TOKEN environment variable is missing")
+      unless token = ENV["BRIGHT_TOKEN"]?
+        raise SecTester::Error.new("BRIGHT_TOKEN environment variable is missing")
       end
 
       initialize(token)
