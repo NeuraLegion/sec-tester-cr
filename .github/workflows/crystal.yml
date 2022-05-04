@@ -26,6 +26,5 @@ jobs:
         npm install -g @neuralegion/nexploit-cli --unsafe-perm=true
     - name: Run tests
       env:
-        NEXPLOIT_TOKEN: ${{ secrets.NEXPLOIT_TOKEN }}
-        NEXPLOIT_REPEATER: ${{ secrets.NEXPLOIT_REPEATER }}
+        NEXPLOIT_TOKEN: ${{ secrets.BRIGHT_TOKEN }}
       run: crystal spec
