@@ -1,5 +1,7 @@
 # sec-tester-cr
 
+![example workflow](https://github.com/NeuraLegion/sec-tester-cr/actions/workflows/crystal.yml/badge.svg)
+
 A library to allow the usage of Bright security scanner inside of the Crystal SPECS unit testing flow
 
 For support and help visit the [Bright Discord](https://discord.gg/jy9BB7twtG)
