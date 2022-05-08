@@ -8,6 +8,9 @@ module SecTester
     getter repeater : String
     getter scan_duration : Time::Span = Time::Span.new
     getter issues
+    getter entry_points : Atomic(Int32) = Atomic.new(0)
+    getter total_params : Atomic(Int32) = Atomic.new(0)
+    getter scan_status : String = ""
 
     @scan_id : String?
     @running : Bool = false
@@ -73,7 +76,8 @@ module SecTester
         "fileId":               file_id,
         "repeaters":            [@repeater],
         "attackParamLocations": ["body", "query", "fragment"],
-        "discoveryTypes":       ["archive"],
+        "discoveryTypes":       options.crawl ? ["crawler", "archive"] : ["archive"],
+        "crawlerUrls":          options.crawl ? [target.url] : nil,
         "smart":                options.smart_scan,
         "skipStaticParams":     options.skip_static_parameters,
         "projectId":            options.project_id || get_first_project_id,
@@ -110,12 +114,15 @@ module SecTester
         response_json = JSON.parse(response.body.to_s)
 
         @scan_duration = response_json["elapsed"].as_i.milliseconds
+        @entry_points.set(response_json["entryPoints"].as_i)
+        @total_params.set(response_json["totalParams"].as_i)
+        get_issues.each { |issue| @issues << issue unless @issues.includes?(issue) }
+        @scan_status = response_json["status"].as_s
 
         if on_issue
           if response_json["issuesLength"].as_i > 0
             Log.warn { "Scan has #{response_json["issuesLength"]} issues, Analyzing based on severity: #{severity_threshold}".colorize.yellow }
             get_issues.each do |issue|
-              @issues << issue unless @issues.includes?(issue)
               case severity_threshold
               when Severity::Medium
                 next unless {"medium", "high"}.any? { |sev| issue.severity.downcase == sev }
@@ -157,8 +164,8 @@ module SecTester
           end
         end
 
-        if (response_json["status"] == "done")
-          Log.info { "Scan done, stop polling".colorize.green }
+        unless ({"running", "pending"}.any? { |status| response_json["status"] == status })
+          Log.info { "Scan #{response_json["status"]}, stop polling".colorize.green }
           stop
           break
         end

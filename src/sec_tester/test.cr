@@ -25,7 +25,7 @@ module SecTester
       initialize(token)
     end
 
-    delegate :scan_duration, :issues, to: @scan
+    delegate :scan_duration, :issues, :entry_points, :total_params, :scan_status, to: @scan
 
     # method to start and spawn the repeater process
     def start_repeater : Process
@@ -73,7 +73,7 @@ module SecTester
       end
     end
 
-    def run_check(scan_name : String, tests : String | Array(String)?, target : Target, severity_threshold : Severity = :low, options : Options = Options.new)
+    def run_check(scan_name : String, tests : String | Array(String)?, target : Target, severity_threshold : Severity = :low, options : Options = Options.new, on_issue : Bool = true, timeout : Time::Span? = 20.minutes)
       Log.info { "Running check #{tests} on #{target}" }
 
       # Verify Repeater process
@@ -86,15 +86,15 @@ module SecTester
       # Polling for scan results
 
       @scan.poll(
-        timeout: 20.minutes,
-        on_issue: true,
+        timeout: timeout,
+        on_issue: on_issue,
         severity_threshold: severity_threshold,
       )
     ensure
       cleanup
     end
 
-    def run_check(scan_name : String, tests : String | Array(String)?, severity_threshold : Severity = :low, options : Options = Options.new)
+    def run_check(scan_name : String, tests : String | Array(String)?, severity_threshold : Severity = :low, options : Options = Options.new, on_issue : Bool = true)
       # Start a server for the user, in this form we can test specific functions.
       payload = Channel(String).new
       response = Channel(String).new
@@ -122,7 +122,14 @@ module SecTester
       )
 
       yield payload, response
-      run_check(scan_name: scan_name, tests: tests, target: target, severity_threshold: severity_threshold, options: options)
+      run_check(
+        scan_name: scan_name,
+        tests: tests,
+        target: target,
+        severity_threshold: severity_threshold,
+        options: options,
+        on_issue: on_issue
+      )
     ensure
       payload.try &.close
       response.try &.close

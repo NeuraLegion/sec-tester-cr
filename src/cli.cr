@@ -23,11 +23,11 @@ cli = Commander::Command.new do |cmd|
   end
 
   cmd.flags.add do |flag|
-    flag.name = "severity"
-    flag.short = "-s"
-    flag.long = "--severity"
-    flag.description = "Set the severity level of the scan, can be low, medium, high."
-    flag.default = "low"
+    flag.name = "name"
+    flag.short = "-n"
+    flag.long = "--name"
+    flag.description = "Set the name of the scan."
+    flag.default = "sec_tester_cli"
   end
 
   cmd.run do |options, arguments|
@@ -36,24 +36,19 @@ cli = Commander::Command.new do |cmd|
     chan = Channel(Nil | Exception).new(1)
     done = Atomic(Int32).new(0)
 
-    severity = case options.string["severity"]
-               when "medium"
-                 SecTester::Severity::Medium
-               when "high"
-                 SecTester::Severity::High
-               else
-                 SecTester::Severity::Low
-               end
-
     spawn do
       begin
         tester.run_check(
-          scan_name: "UnitTestingScan - XSS",
+          scan_name: options.string["name"],
           tests: SecTester::SUPPORTED_TESTS.to_a,
           target: SecTester::Target.new(
             url: options.string["url"]
           ),
-          severity_threshold: severity
+          options: SecTester::Options.new(
+            crawl: true,
+          ),
+          on_issue: false,
+          timeout: nil
         )
         chan.send(nil)
       rescue e : Exception
@@ -64,13 +59,13 @@ cli = Commander::Command.new do |cmd|
     end
 
     loop do
-      break if (done.get == 1)
-
       table = Tallboy.table do
-        header ["Running", "", tester.scan_duration.to_s]
+        header [tester.scan_status.capitalize, "", tester.scan_duration.to_s]
+        header ["Total URLs", "", tester.entry_points.get.to_s]
+        header ["Total Parameters", "", tester.total_params.get.to_s]
         header ["Name", "Severity", "Link"]
 
-        tester.issues.each do |issue|
+        (tester.issues.to_a.sort_by &.severity).each do |issue|
           row [
             issue.name,
             issue.severity,
@@ -81,6 +76,7 @@ cli = Commander::Command.new do |cmd|
 
       system("clear")
       print "\r#{table.render}"
+      break if (done.get == 1)
       sleep 0.5
     end
   end
