@@ -8,6 +8,14 @@ crystal: ">= 1.1.1"
 
 license: MIT
 
+targets:
+  sec_tester_cli:
+    main: src/cli.cr
+
 dependencies:
   har:
     github: NeuraLegion/har
+  commander:
+    github: mrrooijen/commander
+  tallboy:
+    github: epoch/tallboy

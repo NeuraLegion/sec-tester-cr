@@ -1,9 +1,10 @@
 require "log"
-require "./target.cr"
-require "./tests.cr"
-require "./options.cr"
-require "./test.cr"
-require "./severity.cr"
+require "./sec_tester/target.cr"
+require "./sec_tester/issue.cr"
+require "./sec_tester/tests.cr"
+require "./sec_tester/options.cr"
+require "./sec_tester/test.cr"
+require "./sec_tester/severity.cr"
 
 module SecTester
   Log     = ::Log.for("SecTester")
@@ -12,7 +13,7 @@ module SecTester
   backend = ::Log::IOBackend.new(STDOUT)
 
   ::Log.setup do |c|
-    c.bind("SecTester.*", ::Log::Severity::Debug, backend)
+    c.bind("SecTester.*", ::Log::Severity::Error, backend)
   end
 
   # Not the most beautiful way to do this, but it works.

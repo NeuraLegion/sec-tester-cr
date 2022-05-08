@@ -7,10 +7,11 @@ module SecTester
 
     getter repeater : String
     getter scan_duration : Time::Span = Time::Span.new
+    getter issues
 
     @scan_id : String?
     @running : Bool = false
-    @issues : Array(String) = Array(String).new
+    @issues : Set(SecTester::Issue) = Set(SecTester::Issue).new
 
     def initialize(@token : String)
       validate_token!
@@ -96,7 +97,7 @@ module SecTester
       raise SecTester::Error.new("Error starting new scan: #{e.message} response: #{response.try &.body.to_s}")
     end
 
-    def poll(on_issue : Bool = false, timeout : Time::Span? = nil, interval : Time::Span = 30.seconds, severity_threshold : Severity = :low)
+    def poll(on_issue : Bool = false, timeout : Time::Span? = nil, interval : Time::Span = 5.seconds, severity_threshold : Severity = :low)
       raise SecTester::Error.new("Cannot poll scan results without scan_id, make sure to 'start' the scan before polling") unless @scan_id
 
       time_started = Time.monotonic
@@ -114,39 +115,40 @@ module SecTester
           if response_json["issuesLength"].as_i > 0
             Log.warn { "Scan has #{response_json["issuesLength"]} issues, Analyzing based on severity: #{severity_threshold}".colorize.yellow }
             get_issues.each do |issue|
+              @issues << issue unless @issues.includes?(issue)
               case severity_threshold
               when Severity::Medium
-                next unless {"medium", "high"}.any? { |sev| issue["severity"].as_s.downcase == sev }
+                next unless {"medium", "high"}.any? { |sev| issue.severity.downcase == sev }
               when Severity::High
-                next unless issue["severity"].as_s.downcase == "high"
+                next unless issue.severity.downcase == "high"
               end
 
               stop
               message = String.build do |str|
                 str << "\n"
                 str << "Name: ".colorize.cyan.bold
-                str << issue["name"].colorize.white.bold
+                str << issue.name.colorize.white.bold
                 str << "\n"
                 str << "Severity: ".colorize.cyan.bold
-                str << color_severity(issue["severity"].as_s)
+                str << color_severity(issue.severity)
                 str << "\n"
                 str << "Link to Issue: ".colorize.cyan.bold
-                str << "#{BASE_URL}/scans/#{@scan_id}/issues/#{issue["id"]}".colorize.blue.bold
+                str << "#{BASE_URL}#{issue.issue_url}".colorize.blue.bold
                 str << "\n"
                 str << "Details: ".colorize.cyan.bold
-                str << issue["details"].to_s.gsub("\n", " ").colorize.white.bold
+                str << issue.details.gsub("\n", " ").colorize.white.bold
                 str << "\n"
                 str << "Remediation: ".colorize.cyan.bold
-                str << issue["remedy"].to_s.gsub("\n", " ").colorize.white.bold
+                str << issue.remedy.gsub("\n", " ").colorize.white.bold
                 str << "\n"
                 str << "Extra Details: ".colorize.cyan.bold
-                issue["comments"].as_a.each do |comment|
+                issue.comments.each do |comment|
                   str << comment.to_s.gsub("\n", " ").colorize.white.bold
                   str << "\n"
                 end
                 str << "\n"
                 str << "External Resources: ".colorize.cyan.bold
-                str << issue["resources"].as_a.join(", ").colorize.blue.bold
+                str << issue.resources.join(", ").colorize.blue.bold
                 str << "\n"
               end
               Log.warn { message }
@@ -279,11 +281,11 @@ module SecTester
       send_with_retry(method: "DELETE", url: repeater_url)
     end
 
-    private def get_issues : Array(JSON::Any)
+    private def get_issues : Array(Issue)
       issues_url = "#{BASE_URL}/api/v1/scans/#{@scan_id}/issues"
 
       response = send_with_retry("GET", issues_url)
-      JSON.parse(response.body.to_s).as_a
+      Array(Issue).from_json(response.body.to_s)
     rescue e : JSON::ParseException
       raise SecTester::Error.new("Error getting issue data: #{e.message} response: #{response.try &.body.to_s}")
     end
