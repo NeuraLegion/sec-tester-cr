@@ -196,6 +196,19 @@ steps:
 You can see this shard in action at the [Lucky Sec Test](https://github.com/bararchy/lucky_sec_test) repo.
 Specifically look at the [Security Flow Specs](https://github.com/bararchy/lucky_sec_test/blob/main/spec/flows/security_spec.cr)
 
+### Use as a CLI
+
+For the purpose of testing the library you can use the following command:
+
+```bash
+shards build
+bin/sec_tester_cli -t BRIGHT_TOKEN -u https://brokencrystals.com/ # or another target
+```
+
+This will run the tests on the target and print the results to the console in a nice table format.
+
+You can use `-h` or `--help` to see the available options.
+
 ## Contributing
 
 1. Fork it (<https://github.com/NeuraLegion/sec-tester-cr/fork>)
