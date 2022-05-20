@@ -104,6 +104,27 @@ tester.run_check(scan_name: "UnitTestingScan - XSS - function only", tests: ["xs
 end
 ```
 
+There is also a variant of this interface that accepts target and yields back the whole HTTP::Server::Context.
+This is useful if you want to do something with the response body or headers.
+
+```crystal
+tester.run_check(scan_name: "UnitTestingScan - XSS - request/response test", target: target, tests: ["xss"]) do |context_channel|
+  spawn do
+    while context_tuple = context_channel.receive?
+      context = context_tuple[:context]
+      done_channel = context_tuple[:done_chan]
+      input = context.request.query_params["id"]?.to_s
+      response_data = my_function(input)
+
+      context.response.headers["Content-Type"] = "text/html"
+      context.response.status_code = 200
+      context.response.print(response_data)
+      done_channel.send(nil) # Important part, make sure to send back nil to the done channel
+    end
+  end
+end
+```
+
 ### Fail by Severity Threshold
 
 When you want to fail the test by severity threshold, you can use the following example.
@@ -187,7 +208,7 @@ steps:
       npm install -g @neuralegion/nexploit-cli --unsafe-perm=true
   - name: Run tests
     env:
-      NEXPLOIT_TOKEN: ${{ secrets.BRIGHT_TOKEN }}
+      BRIGHT_TOKEN: ${{ secrets.BRIGHT_TOKEN }}
     run: crystal spec
 ```
 

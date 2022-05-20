@@ -230,6 +230,30 @@ describe SecTester::Test do
       end
     end
   end
+
+  it "starts a request/response oriented test for XSS" do
+    tester = SecTester::Test.new
+    target = SecTester::Target.new(
+      url: "http://localhost?id=5"
+    )
+    expect_raises(SecTester::IssueFound) do
+      tester.run_check(scan_name: "UnitTestingScan - XSS - request/response test", target: target, tests: ["xss"]) do |context_channel|
+        spawn do
+          while context_tuple = context_channel.receive?
+            context = context_tuple[:context]
+            done_channel = context_tuple[:done_chan]
+            input = context.request.query_params["id"]?.to_s
+            response_data = my_function(input)
+
+            context.response.headers["Content-Type"] = "text/html"
+            context.response.status_code = 200
+            context.response.print(response_data)
+            done_channel.send(nil)
+          end
+        end
+      end
+    end
+  end
 end
 
 def my_function(data : String) : String
