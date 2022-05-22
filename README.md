@@ -163,6 +163,9 @@ When running a check you can now pass a few options to the scan. Options are:
 1. Smart scan (true\false) - Specify whether to use automatic smart decisions (such as parameter skipping, detection phases and so on) in order to minimize scan time. When this option is turned off, all tests are run on all the parameters, that increases coverage at the expense of scan time.
 2. Skip Static Params (true\false) - Specify whether to skip static parameters to minimize scan time.
 3. Specify Project ID for the scan - [manage-projects](https://docs.brightsec.com/docs/manage-projects)
+4. Parameter locations: `param_locations` - Specify the parameter locations to scan in the Request. this opens supports `body`, `query`, `fragment`, `headers` and `path`. defualt is `body`, `query` and `fragment`.
+
+```crystal
 
 Usage example:
 
@@ -171,7 +174,8 @@ tester.run_check(
   options: SecTester::Options.new(
     smart_scan: true,
     skip_static_parameters: true,
-    project_id: "ufNQ9Fo7XFVAsuyGpo7YTf"
+    project_id: "ufNQ9Fo7XFVAsuyGpo7YTf",
+    param_locations: ["query", "body"]
   )
 )
 ```

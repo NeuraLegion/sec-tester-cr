@@ -40,6 +40,19 @@ describe SecTester::Target do
   end
 end
 
+describe SecTester::Options do
+  it "Sets defaults for all options" do
+    options = SecTester::Options.new
+    options.smart_scan.should eq(true)
+  end
+
+  it "Raise on wrong location" do
+    expect_raises(SecTester::Error) do
+      options = SecTester::Options.new(param_locations: ["blabla"])
+    end
+  end
+end
+
 describe SecTester::Test do
   it "starts a new scan for XSS" do
     server = HTTP::Server.new do |context|
