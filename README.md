@@ -22,7 +22,8 @@ For support and help visit the [Bright Discord](https://discord.gg/jy9BB7twtG)
 
 ### Dependencies
 
-To use the library you will first need to
+> **Warning**
+> To use the library you will first need complete all of the below steps.
 
 1. Register for an account at [signup](https://app.neuralegion.com/signup)
 2. install the [nexploit-cli](https://www.npmjs.com/package/@neuralegion/nexploit-cli) utility
@@ -71,7 +72,8 @@ end
 The following example shows how to configure a target manually.
 this is very useful to control expected response from the target.
 
-* PRO-TIP: configuring the response information is very important for the scanner to work properly. and can decrease scan times and improve the accuracy of the scan.
+> **Note**
+> Configuring the response information is very important for the scanner to work properly. and can decrease scan times and improve the accuracy of the scan.
 
 ```crystal
 target: SecTester::Target.new(
