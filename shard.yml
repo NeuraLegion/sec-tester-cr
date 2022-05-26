@@ -19,3 +19,5 @@ dependencies:
     github: mrrooijen/commander
   tallboy:
     github: epoch/tallboy
+  opentelemetry-instrumentation:
+    github: wyhaines/opentelemetry-instrumentation.cr

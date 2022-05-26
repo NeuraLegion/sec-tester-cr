@@ -299,7 +299,6 @@ module SecTester
 
     private def poll_call : HTTP::Client::Response
       poll_url = "#{BASE_URL}/api/v1/scans/#{@scan_id}"
-
       send_with_retry("GET", poll_url)
     end
 
