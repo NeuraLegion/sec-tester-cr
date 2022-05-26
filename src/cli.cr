@@ -3,13 +3,31 @@ require "tallboy"
 require "./sec_tester.cr"
 require "opentelemetry-instrumentation"
 
+# OpenTelemetry can be configured in all cases. The default behavior
+# is to use a NullExporter, so that data is recorded, and is sent to
+# an exporter, but the exporter does nothing with them.
+# 
+# Sending traces to a platform like New Relic then just requires the
+# setting of a few environment variables.
+#
+# - OTEL_TRACES_EXPORTER=http
+#
+#   This sets the exporter for traces at the HTTP exporter.
+# 
+# - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=https://otlp.nr-data.net:4318/v1/traces
+# 
+#   This provides the OTLP/HTTP exporter an endpoint to send traces to.
+#
+# - OTEL_EXPORTER_OTLP_TRACES_HEADERS="api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxNRAL"
+#
+#   This specifies any specific HTTP headers that need to be set, such as the `api-key` header.
+#
+# For other platforms, just change the TRACES_ENDPOINT and TRACES_HEADERS
+# values as appropriate for that platform.
 OpenTelemetry.configure do |config|
   config.service_version = SecTester::VERSION
-  config.exporter = OpenTelemetry::Exporter.new(variant: :http) do |exporter|
-    exporter = exporter.as(OpenTelemetry::Exporter::Http)
-  end
+  config.service_name = "BrightSec Sec-Tester-CLI"
 end
-
 
 cli = Commander::Command.new do |cmd|
   cmd.use = "sec_tester_cli"
@@ -106,7 +124,7 @@ cli = Commander::Command.new do |cmd|
       system("clear")
       print "\r#{table.render}"
       break if (done.get == 1)
-      sleep 5
+      sleep 0.5
     end
   end
 end
