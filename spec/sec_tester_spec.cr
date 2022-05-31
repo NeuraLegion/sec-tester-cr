@@ -40,6 +40,19 @@ describe SecTester::Target do
   end
 end
 
+describe SecTester::Options do
+  it "Sets defaults for all options" do
+    options = SecTester::Options.new
+    options.smart_scan.should eq(true)
+  end
+
+  it "Raise on wrong location" do
+    expect_raises(SecTester::Error) do
+      options = SecTester::Options.new(param_locations: ["blabla"])
+    end
+  end
+end
+
 describe SecTester::Test do
   it "starts a new scan for XSS" do
     server = HTTP::Server.new do |context|
@@ -225,6 +238,30 @@ describe SecTester::Test do
 
             # we end up sending the response back to the channel
             response.send(response_data)
+          end
+        end
+      end
+    end
+  end
+
+  it "starts a request/response oriented test for XSS" do
+    tester = SecTester::Test.new
+    target = SecTester::Target.new(
+      url: "http://localhost?id=5"
+    )
+    expect_raises(SecTester::IssueFound) do
+      tester.run_check(scan_name: "UnitTestingScan - XSS - request/response test", target: target, tests: ["xss"]) do |context_channel|
+        spawn do
+          while context_tuple = context_channel.receive?
+            context = context_tuple[:context]
+            done_channel = context_tuple[:done_chan]
+            input = context.request.query_params["id"]?.to_s
+            response_data = my_function(input)
+
+            context.response.headers["Content-Type"] = "text/html"
+            context.response.status_code = 200
+            context.response.print(response_data)
+            done_channel.send(nil)
           end
         end
       end

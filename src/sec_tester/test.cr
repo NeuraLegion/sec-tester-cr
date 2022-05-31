@@ -94,6 +94,39 @@ module SecTester
       cleanup
     end
 
+    def run_check(scan_name : String, tests : String | Array(String)?, target : Target, severity_threshold : Severity = :low, options : Options = Options.new, on_issue : Bool = true)
+      # Start a server for the user, in this form we can test specific functions.
+      yield_channel = Channel(NamedTuple(
+        context: HTTP::Server::Context,
+        done_chan: Channel(Nil))).new
+
+      server = HTTP::Server.new do |context|
+        done = Channel(Nil).new(1)
+        yield_channel.send({context: context, done_chan: done})
+        done.receive
+      end
+
+      addr = server.bind_unused_port
+      spawn do
+        server.listen
+      end
+
+      target.url = (URI.parse(target.url).tap { |uri| uri.host = addr.to_s }).to_s
+
+      yield yield_channel
+      run_check(
+        scan_name: scan_name,
+        tests: tests,
+        target: target,
+        severity_threshold: severity_threshold,
+        options: options,
+        on_issue: on_issue
+      )
+    ensure
+      yield_channel.try &.close
+      server.try &.close
+    end
+
     def run_check(scan_name : String, tests : String | Array(String)?, severity_threshold : Severity = :low, options : Options = Options.new, on_issue : Bool = true)
       # Start a server for the user, in this form we can test specific functions.
       payload = Channel(String).new

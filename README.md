@@ -22,7 +22,9 @@ For support and help visit the [Bright Discord](https://discord.gg/jy9BB7twtG)
 
 ### Dependencies
 
-To use the library you will first need to
+> **Warning**
+>
+> To use the library you will first need to complete all of the below steps.
 
 1. Register for an account at [signup](https://app.neuralegion.com/signup)
 2. install the [nexploit-cli](https://www.npmjs.com/package/@neuralegion/nexploit-cli) utility
@@ -71,7 +73,9 @@ end
 The following example shows how to configure a target manually.
 this is very useful to control expected response from the target.
 
-* PRO-TIP: configuring the response information is very important for the scanner to work properly. and can decrease scan times and improve the accuracy of the scan.
+> **Note**
+>
+> Configuring the response information is very important for the scanner to work properly. and can decrease scan times and improve the accuracy of the scan.
 
 ```crystal
 target: SecTester::Target.new(
@@ -99,6 +103,27 @@ tester.run_check(scan_name: "UnitTestingScan - XSS - function only", tests: ["xs
 
       # we end up sending the response back to the channel
       response.send(response_data)
+    end
+  end
+end
+```
+
+There is also a variant of this interface that accepts target and yields back the whole HTTP::Server::Context.
+This is useful if you want to do something with the response body or headers.
+
+```crystal
+tester.run_check(scan_name: "UnitTestingScan - XSS - request/response test", target: target, tests: ["xss"]) do |context_channel|
+  spawn do
+    while context_tuple = context_channel.receive?
+      context = context_tuple[:context]
+      done_channel = context_tuple[:done_chan]
+      input = context.request.query_params["id"]?.to_s
+      response_data = my_function(input)
+
+      context.response.headers["Content-Type"] = "text/html"
+      context.response.status_code = 200
+      context.response.print(response_data)
+      done_channel.send(nil) # Important part, make sure to send back nil to the done channel
     end
   end
 end
@@ -138,6 +163,9 @@ When running a check you can now pass a few options to the scan. Options are:
 1. Smart scan (true\false) - Specify whether to use automatic smart decisions (such as parameter skipping, detection phases and so on) in order to minimize scan time. When this option is turned off, all tests are run on all the parameters, that increases coverage at the expense of scan time.
 2. Skip Static Params (true\false) - Specify whether to skip static parameters to minimize scan time.
 3. Specify Project ID for the scan - [manage-projects](https://docs.brightsec.com/docs/manage-projects)
+4. Parameter locations: `param_locations` - Specify the parameter locations to scan in the Request. this opens supports `body`, `query`, `fragment`, `headers` and `path`. defualt is `body`, `query` and `fragment`.
+
+```crystal
 
 Usage example:
 
@@ -146,7 +174,8 @@ tester.run_check(
   options: SecTester::Options.new(
     smart_scan: true,
     skip_static_parameters: true,
-    project_id: "ufNQ9Fo7XFVAsuyGpo7YTf"
+    project_id: "ufNQ9Fo7XFVAsuyGpo7YTf",
+    param_locations: ["query", "body"]
   )
 )
 ```
@@ -187,7 +216,7 @@ steps:
       npm install -g @neuralegion/nexploit-cli --unsafe-perm=true
   - name: Run tests
     env:
-      NEXPLOIT_TOKEN: ${{ secrets.BRIGHT_TOKEN }}
+      BRIGHT_TOKEN: ${{ secrets.BRIGHT_TOKEN }}
     run: crystal spec
 ```
 

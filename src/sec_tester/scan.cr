@@ -75,7 +75,7 @@ module SecTester
         "tests":                tests,
         "fileId":               file_id,
         "repeaters":            [@repeater],
-        "attackParamLocations": ["body", "query", "fragment"],
+        "attackParamLocations": options.param_locations,
         "discoveryTypes":       options.crawl ? ["crawler", "archive"] : ["archive"],
         "crawlerUrls":          options.crawl ? [target.url] : nil,
         "smart":                options.smart_scan,
