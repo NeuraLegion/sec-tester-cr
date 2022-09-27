@@ -98,7 +98,7 @@ module SecTester
       Log.debug { "Sending body request: #{body}" }
 
       response = send_with_retry(method: "POST", url: new_scan_url, body: body)
-      raise SecTester::Error.new("Error starting scan: #{response.body.to_s}") unless response.status.success?
+      raise SecTester::Error.new("Error starting scan: #{response.body}") unless response.status.success?
       @scan_id = JSON.parse(response.body.to_s)["id"].to_s
     rescue e : JSON::ParseException
       raise SecTester::Error.new("Error starting new scan: #{e.message} response: #{response.try &.body.to_s}")
@@ -256,7 +256,7 @@ module SecTester
 
       response = send_with_retry(method: "POST", url: archive_url, headers: headers, body: body_io.to_s)
 
-      Log.debug { "Uploaded archive to #{BASE_URL}/api/v1/files?discard=#{discard} response: #{response.body.to_s}" }
+      Log.debug { "Uploaded archive to #{BASE_URL}/api/v1/files?discard=#{discard} response: #{response.body}" }
       JSON.parse(response.body.to_s)["id"].to_s
     rescue e : JSON::ParseException
       raise SecTester::Error.new("Error uploading archive: #{e.message} response: #{response.try &.body.to_s}")
@@ -279,7 +279,7 @@ module SecTester
       # Fetch repeater ID by name
       response = send_with_retry(method: "GET", url: repeater_url)
       repeater_id = JSON.parse(response.body.to_s).as_a.find { |repeater| repeater["name"] == repeater_name }.try &.["id"].to_s
-      raise SecTester::Error.new("Error creating repeater: #{response.body.to_s}") unless repeater_id
+      raise SecTester::Error.new("Error creating repeater: #{response.body}") unless repeater_id
       repeater_id
     rescue e : JSON::ParseException
       raise SecTester::Error.new("Error creating repeater: #{e.message} response: #{response.try &.body.to_s}")
@@ -315,7 +315,7 @@ module SecTester
 
       5.times do
         if response.status_code >= 500
-          Log.error { "Retrying #{method} #{url} - #{response.status_code} - #{response.body.to_s}" }
+          Log.error { "Retrying #{method} #{url} - #{response.status_code} - #{response.body}" }
           sleep 5
           response = HTTP::Client.exec(
             method: method,

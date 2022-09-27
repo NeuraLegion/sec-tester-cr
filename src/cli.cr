@@ -57,7 +57,7 @@ cli = Commander::Command.new do |cmd|
     flag.default = "sec_tester_cli"
   end
 
-  cmd.run do |options, arguments|
+  cmd.run do |options|
     tester = SecTester::Test.new(token: options.string["token"])
 
     chan = Channel(Nil | Exception).new(1)

@@ -20,19 +20,19 @@ describe SecTester::Target do
 
   it "raises on faulty scheme" do
     expect_raises(SecTester::Error) do
-      target = SecTester::Target.new("www.google.com")
+      SecTester::Target.new("www.google.com")
     end
   end
 
   it "raises on missing host" do
     expect_raises(SecTester::Error) do
-      target = SecTester::Target.new("http://")
+      SecTester::Target.new("http://")
     end
   end
 
   it "raises on wrong method" do
     expect_raises(SecTester::Error) do
-      target = SecTester::Target.new(
+      SecTester::Target.new(
         method: "blabla",
         url: "http://www.google.com"
       )
@@ -48,7 +48,7 @@ describe SecTester::Options do
 
   it "Raise on wrong location" do
     expect_raises(SecTester::Error) do
-      options = SecTester::Options.new(param_locations: ["blabla"])
+      SecTester::Options.new(param_locations: ["blabla"])
     end
   end
 end
