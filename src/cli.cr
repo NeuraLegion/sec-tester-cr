@@ -6,16 +6,16 @@ require "opentelemetry-instrumentation"
 # OpenTelemetry can be configured in all cases. The default behavior
 # is to use a NullExporter, so that data is recorded, and is sent to
 # an exporter, but the exporter does nothing with them.
-# 
+#
 # Sending traces to a platform like New Relic then just requires the
 # setting of a few environment variables.
 #
 # - OTEL_TRACES_EXPORTER=http
 #
 #   This sets the exporter for traces at the HTTP exporter.
-# 
+#
 # - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=https://otlp.nr-data.net:4318/v1/traces
-# 
+#
 #   This provides the OTLP/HTTP exporter an endpoint to send traces to.
 #
 # - OTEL_EXPORTER_OTLP_TRACES_HEADERS="api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxNRAL"

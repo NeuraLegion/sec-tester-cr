@@ -82,6 +82,9 @@ module SecTester
         "skipStaticParams":     options.skip_static_parameters,
         "projectId":            options.project_id || get_first_project_id,
         "slowEpTimeout":        options.slow_ep_timeout,
+        "targetTimeout":        options.target_timeout,
+        "authObjectId":         options.auth_object_id,
+        "templateId":           options.template_id,
         "info":                 {
           "source": "utlib",
           "client": {
