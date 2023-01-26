@@ -37,6 +37,11 @@ module SecTester
         "--id", @scan.repeater,
       ]
 
+      if ENV["CLUSTER_URL"]?
+        repeater_commands << "--cluster"
+        repeater_commands << URI.parse(ENV["CLUSTER_URL"]).host.to_s
+      end
+
       # Fail if can't find nexploit-cli executable
       unless Process.find_executable(repeater_commands.first)
         raise SecTester::Error.new("#{repeater_commands.first} executable not found")
