@@ -128,9 +128,11 @@ module SecTester
             get_issues.each do |issue|
               case severity_threshold
               when Severity::Medium
-                next unless {"medium", "high"}.any? { |sev| issue.severity.downcase == sev }
+                next unless {"medium", "high", "critical"}.any? { |sev| issue.severity.downcase == sev }
               when Severity::High
-                next unless issue.severity.downcase == "high"
+                next unless {"high", "critical"}.any? { |sev| issue.severity.downcase == sev }
+              when Severity::Critical
+                next unless issue.severity.downcase == "critical"
               end
 
               stop
@@ -214,6 +216,8 @@ module SecTester
       when "medium"
         severity.colorize.yellow.bold
       when "high"
+        severity.colorize(Colorize::ColorRGB.new(255, 94, 5)).bold
+      when "critical"
         severity.colorize.red.bold
       else
         severity

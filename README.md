@@ -144,7 +144,7 @@ tester.run_check(
 )
 ```
 
-The `severity_threshold` is a `:low`, `:medium` or `:high` value. it allows you to not fail the build if the severity is lower than the threshold.
+The `severity_threshold` is a `:low`, `:medium`, `:high` or `:critical` value. it allows you to not fail the build if the severity is lower than the threshold.
 
 For example if you want to run the test and fail the build if the severity is `:high` but continue testing if it's `:medium` or `:low`. use the following example.
 
