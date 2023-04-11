@@ -35,6 +35,7 @@ module SecTester
     "proto_pollution",
     "retire_js",
     "rfi",
+    "amazon_s3_takeover",
     "secret_tokens",
     "server_side_js_injection",
     "sqli",
