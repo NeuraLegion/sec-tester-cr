@@ -3,7 +3,7 @@ require "colorize"
 
 module SecTester
   class Scan
-    BASE_URL = ENV["CLUSTER_URL"]? || "https://app.neuralegion.com"
+    BASE_URL = ENV["CLUSTER_URL"]? || "https://app.brightsec.com"
 
     getter repeater : String
     getter scan_duration : Time::Span = Time::Span.new
@@ -39,7 +39,7 @@ module SecTester
 
       # Unless tests are nil, we need to validate them
       if tests
-        unless tests.all? { |test| test.in?(SUPPORTED_TESTS) }
+        unless tests.all?(&.in?(SUPPORTED_TESTS))
           raise SecTester::Error.new("Unsupported tests: #{tests} (supported: #{SUPPORTED_TESTS})")
         end
       end
@@ -76,10 +76,10 @@ module SecTester
         "fileId":               file_id,
         "repeaters":            [@repeater],
         "attackParamLocations": options.param_locations,
-        "discoveryTypes":       options.crawl ? ["crawler", "archive"] : ["archive"],
-        "crawlerUrls":          options.crawl ? [target.url] : nil,
-        "smart":                options.smart_scan,
-        "skipStaticParams":     options.skip_static_parameters,
+        "discoveryTypes":       options.crawl? ? ["crawler", "archive"] : ["archive"],
+        "crawlerUrls":          options.crawl? ? [target.url] : nil,
+        "smart":                options.smart_scan?,
+        "skipStaticParams":     options.skip_static_parameters?,
         "projectId":            options.project_id || get_first_project_id,
         "slowEpTimeout":        options.slow_ep_timeout,
         "targetTimeout":        options.target_timeout,
@@ -169,7 +169,7 @@ module SecTester
           end
         end
 
-        unless ({"running", "pending"}.any? { |status| response_json["status"] == status })
+        unless {"running", "pending"}.any? { |status| response_json["status"] == status }
           Log.info { "Scan #{response_json["status"]}, stop polling".colorize.green }
           stop
           break
@@ -191,7 +191,6 @@ module SecTester
         stop_url = "#{BASE_URL}/api/v1/scans/#{@scan_id}/stop"
 
         Log.debug { "Stopping scan #{@scan_id}" }
-        headers = get_headers
         # Stop Scan
         send_with_retry(method: "GET", url: stop_url)
         # Remove Repeater

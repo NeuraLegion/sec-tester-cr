@@ -123,7 +123,7 @@ cli = Commander::Command.new do |cmd|
 
       system("clear")
       print "\r#{table.render}"
-      break if (done.get == 1)
+      break if done.get == 1
       sleep 0.5
     end
   end

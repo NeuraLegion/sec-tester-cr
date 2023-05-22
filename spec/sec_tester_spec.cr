@@ -43,7 +43,7 @@ end
 describe SecTester::Options do
   it "Sets defaults for all options" do
     options = SecTester::Options.new
-    options.smart_scan.should eq(true)
+    options.smart_scan?.should eq(true)
   end
 
   it "Raise on wrong location" do

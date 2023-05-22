@@ -70,12 +70,10 @@ module SecTester
     end
 
     def cleanup
-      begin
-        Log.info { "Stopping repeater process" }
-        @repeater_process.signal(:int)
-      rescue e : Exception
-        Log.error(exception: e) { "Error stopping repeater's process" }
-      end
+      Log.info { "Stopping repeater process" }
+      @repeater_process.signal(:int)
+    rescue e : Exception
+      Log.error(exception: e) { "Error stopping repeater's process" }
     end
 
     def run_check(scan_name : String, tests : String | Array(String)?, target : Target, severity_threshold : Severity = :low, options : Options = Options.new, on_issue : Bool = true, timeout : Time::Span? = 20.minutes)
@@ -99,7 +97,7 @@ module SecTester
       cleanup
     end
 
-    def run_check(scan_name : String, tests : String | Array(String)?, target : Target, severity_threshold : Severity = :low, options : Options = Options.new, on_issue : Bool = true)
+    def run_check(scan_name : String, tests : String | Array(String)?, target : Target, severity_threshold : Severity = :low, options : Options = Options.new, on_issue : Bool = true, &)
       # Start a server for the user, in this form we can test specific functions.
       yield_channel = Channel(NamedTuple(
         context: HTTP::Server::Context,
@@ -116,7 +114,7 @@ module SecTester
         server.listen
       end
 
-      target.url = (URI.parse(target.url).tap { |uri| uri.host = addr.to_s }).to_s
+      target.url = URI.parse(target.url).tap(&.host = addr.to_s).to_s
 
       yield yield_channel
       run_check(
@@ -132,7 +130,7 @@ module SecTester
       server.try &.close
     end
 
-    def run_check(scan_name : String, tests : String | Array(String)?, severity_threshold : Severity = :low, options : Options = Options.new, on_issue : Bool = true)
+    def run_check(scan_name : String, tests : String | Array(String)?, severity_threshold : Severity = :low, options : Options = Options.new, on_issue : Bool = true, &)
       # Start a server for the user, in this form we can test specific functions.
       payload = Channel(String).new
       response = Channel(String).new
