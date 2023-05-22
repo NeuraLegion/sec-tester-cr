@@ -112,21 +112,27 @@ module SecTester
       loop do
         sleep interval
 
-        Log.debug { "Polling scan #{@scan_id} - passed #{Time.monotonic - time_started}" }
         response = poll_call
         response_json = JSON.parse(response.body.to_s)
 
-        @scan_duration = response_json["elapsed"].as_i.milliseconds
+        @scan_duration = response_json["elapsed"].as_f.milliseconds
         @entry_points.set(response_json["entryPoints"].as_i)
         @total_params.set(response_json["totalParams"].as_i)
         get_issues.each { |issue| @issues << issue unless @issues.includes?(issue) }
         @scan_status = response_json["status"].as_s
 
+        Log.debug { "Polling scan #{@scan_id} -- duration: #{@scan_duration} -- status: #{@scan_status}" }
+
+        should_raise = false
         if on_issue
           if response_json["issuesLength"].as_i > 0
             Log.warn { "Scan has #{response_json["issuesLength"]} issues, Analyzing based on severity: #{severity_threshold}".colorize.yellow }
+            stop
+
             get_issues.each do |issue|
               case severity_threshold
+              when Severity::Low
+                next unless {"low", "medium", "high", "critical"}.any? { |sev| issue.severity.downcase == sev }
               when Severity::Medium
                 next unless {"medium", "high", "critical"}.any? { |sev| issue.severity.downcase == sev }
               when Severity::High
@@ -135,7 +141,7 @@ module SecTester
                 next unless issue.severity.downcase == "critical"
               end
 
-              stop
+              should_raise = true
               message = String.build do |str|
                 str << "\n"
                 str << "Name: ".colorize.cyan.bold
@@ -164,8 +170,9 @@ module SecTester
                 str << "\n"
               end
               Log.warn { message }
-              raise IssueFound.new(message)
+              STDERR.puts message
             end
+            raise IssueFound.new("Scan has issues, see above for details") if should_raise
           end
         end
 
@@ -191,8 +198,15 @@ module SecTester
         stop_url = "#{BASE_URL}/api/v1/scans/#{@scan_id}/stop"
 
         Log.debug { "Stopping scan #{@scan_id}" }
-        # Stop Scan
-        send_with_retry(method: "GET", url: stop_url)
+
+        # Ensure scane is running
+        response = poll_call
+        response_json = JSON.parse(response.body.to_s)
+        if response_json["status"].as_s == "running"
+          # Stop Scan
+          send_with_retry(method: "GET", url: stop_url)
+        end
+
         # Remove Repeater
         remove_repeater
       end

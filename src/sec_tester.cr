@@ -8,7 +8,7 @@ require "./sec_tester/severity.cr"
 
 module SecTester
   Log     = ::Log.for("SecTester")
-  VERSION = "1.5.1"
+  VERSION = "1.5.2"
 
   backend = ::Log::IOBackend.new(STDOUT)
 
