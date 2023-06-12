@@ -1,5 +1,6 @@
 require "har"
 require "uri"
+require "./errors.cr"
 
 module SecTester
   class Target

@@ -1,5 +1,6 @@
 require "json"
 require "colorize"
+require "./errors.cr"
 
 module SecTester
   class Scan

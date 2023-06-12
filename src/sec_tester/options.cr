@@ -1,3 +1,5 @@
+require "./errors.cr"
+
 module SecTester
   struct Options
     property? smart_scan : Bool

@@ -1,4 +1,5 @@
 require "./scan.cr"
+require "./errors.cr"
 
 module SecTester
   class Test
