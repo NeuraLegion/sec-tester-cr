@@ -10,14 +10,11 @@ require "./sec_tester/repeater.cr"
 
 module SecTester
   Log     = ::Log.for("SecTester")
-  VERSION = "1.5.4"
+  VERSION = "1.5.5"
 
   backend = ::Log::IOBackend.new(STDOUT)
 
   ::Log.setup do |c|
     c.bind("SecTester.*", ::Log::Severity::Error, backend)
   end
-
-  # Check if the nexploit-cli is available, if not raise an error.
-  {% system("command -v nexploit-cli") %} # ⚠️ nexploit-cli not found. Please install it using: npm install -g @neuralegion/nexploit-cli ⚠️
 end

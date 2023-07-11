@@ -26,10 +26,9 @@ For support and help visit the [Bright Discord](https://discord.gg/jy9BB7twtG)
 >
 > To use the library you will first need to complete all of the below steps.
 
-1. Register for an account at [signup](https://app.neuralegion.com/signup)
-2. install the [nexploit-cli](https://www.npmjs.com/package/@neuralegion/nexploit-cli) utility
-3. Generate an API key from your [UI](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens)
-4. The preferred approach is to setup your API-Key as ENV var `BRIGHT_TOKEN` for API key.
+1. Register for an account at [signup](https://app.brightsec.com/signup)
+2. Generate an API key from your [UI](https://docs.brightsec.com/docs/manage-your-personal-account#manage-your-personal-api-keys-authentication-tokens)
+3. The preferred approach is to setup your API-Key as ENV var `BRIGHT_TOKEN` for API key.
 
 ### Use Inside Specs
 
