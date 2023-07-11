@@ -6,7 +6,7 @@ module SecTester
   class Scan
     BASE_URL = ENV["CLUSTER_URL"]? || "https://app.brightsec.com"
 
-    getter repeater : String
+    getter repeater : Repeater
     getter scan_duration : Time::Span = Time::Span.new
     getter issues
     getter entry_points : Atomic(Int32) = Atomic.new(0)
@@ -19,7 +19,10 @@ module SecTester
 
     def initialize(@token : String)
       validate_token!
-      @repeater = create_repeater
+      @repeater = Repeater.new(api_key: @token, hostname: URI.parse(BASE_URL).host.to_s)
+      spawn do
+        @repeater.run
+      end
     end
 
     private def get_headers : HTTP::Headers
@@ -75,7 +78,7 @@ module SecTester
         "module":               "dast",
         "tests":                tests,
         "fileId":               file_id,
-        "repeaters":            [@repeater],
+        "repeaters":            [@repeater.id],
         "attackParamLocations": options.param_locations,
         "discoveryTypes":       options.crawl? ? ["crawler", "archive"] : ["archive"],
         "crawlerUrls":          options.crawl? ? [target.url] : nil,
@@ -207,15 +210,13 @@ module SecTester
           # Stop Scan
           send_with_retry(method: "GET", url: stop_url)
         end
-
-        # Remove Repeater
-        remove_repeater
+        @repeater.close
       end
     end
 
     # method to check if repeater is up and running
     def repeater_running? : Bool
-      repeater_url = "#{BASE_URL}/api/v1/repeaters/#{@repeater}"
+      repeater_url = "#{BASE_URL}/api/v1/repeaters/#{@repeater.id}"
 
       response = send_with_retry(method: "GET", url: repeater_url)
       JSON.parse(response.body.to_s)["status"].to_s == "connected"
@@ -278,35 +279,6 @@ module SecTester
       JSON.parse(response.body.to_s)["id"].to_s
     rescue e : JSON::ParseException
       raise SecTester::Error.new("Error uploading archive: #{e.message} response: #{response.try &.body.to_s}")
-    end
-
-    # Auto generate repeater for the scan
-    private def create_repeater : String
-      repeater_url = "#{BASE_URL}/api/v1/repeaters"
-      repeater_name = Random::Secure.hex
-
-      body = {
-        "active":      true,
-        "description": "Auto generated repeater",
-        "name":        repeater_name,
-      }.to_json
-
-      # Create a repeater
-      send_with_retry(method: "POST", url: repeater_url, body: body)
-
-      # Fetch repeater ID by name
-      response = send_with_retry(method: "GET", url: repeater_url)
-      repeater_id = JSON.parse(response.body.to_s).as_a.find { |repeater| repeater["name"] == repeater_name }.try &.["id"].to_s
-      raise SecTester::Error.new("Error creating repeater: #{response.body}") unless repeater_id
-      repeater_id
-    rescue e : JSON::ParseException
-      raise SecTester::Error.new("Error creating repeater: #{e.message} response: #{response.try &.body.to_s}")
-    end
-
-    private def remove_repeater
-      repeater_url = "#{BASE_URL}/api/v1/repeaters/#{@repeater}"
-
-      send_with_retry(method: "DELETE", url: repeater_url)
     end
 
     private def get_issues : Array(Issue)

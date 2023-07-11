@@ -21,6 +21,8 @@ dependencies:
     github: epoch/tallboy
   opentelemetry-instrumentation:
     github: wyhaines/opentelemetry-instrumentation.cr
+  socket_io:
+    github: NeuraLegion/socket_io
 
 development_dependencies:
   ameba:
