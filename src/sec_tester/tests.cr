@@ -13,6 +13,7 @@ module SecTester
     "date_manipulation",
     "default_login_location",
     "directory_listing",
+    # @deprecated Use "xss" instead
     "dom_xss",
     # "email_header_injection",
     "excessive_data_exposure",
@@ -44,6 +45,7 @@ module SecTester
     "sqli",
     "ssrf",
     "ssti",
+    "stored_xss",
     "unvalidated_redirect",
     "version_control_systems",
     "webdav",
