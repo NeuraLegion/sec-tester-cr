@@ -37,6 +37,7 @@ module SecTester
     "open_database",
     "osi",
     # "password_reset_poisoning",
+    "prompt_injection",
     "proto_pollution",
     "retire_js",
     "rfi",
