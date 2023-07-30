@@ -9,6 +9,7 @@ module SecTester
     "common_files",
     "cookie_security",
     "csrf",
+    "css_injection",
     "cve_test",
     "date_manipulation",
     "default_login_location",
