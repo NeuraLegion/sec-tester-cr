@@ -46,7 +46,7 @@ module SecTester
       end
 
       # handle undeployed events
-      @socket.on("undeployed") do |event|
+      @socket.on("undeployed") do |_|
         @id = ""
       end
 
