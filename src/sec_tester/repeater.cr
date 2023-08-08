@@ -48,6 +48,7 @@ module SecTester
       # handle undeployed events
       @socket.on("undeployed") do |_|
         @id = ""
+        @socket.off("undeployed")
       end
 
       Log.debug { "Repeater started" }

@@ -23,9 +23,13 @@ module SecTester
       spawn do
         @repeater.run
       end
-      while @repeater.id.empty?
+      # Wait for repeater to get ID
+      # Don't wait forever, if repeater is not running, we will get an error
+      # after 30 seconds
+
+      30.times do
+        break unless @repeater.id.empty?
         sleep 1.second
-        Fiber.yield
         Log.debug { "Waiting for repeater to get ID" }
       end
     end
