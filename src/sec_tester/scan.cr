@@ -23,6 +23,11 @@ module SecTester
       spawn do
         @repeater.run
       end
+      while @repeater.id.empty?
+        sleep 1.second
+        Fiber.yield
+        Log.debug { "Waiting for repeater to get ID" }
+      end
     end
 
     private def get_headers : HTTP::Headers
