@@ -93,7 +93,7 @@ module SecTester
         "crawlerUrls":          options.crawl? ? [target.url] : nil,
         "smart":                options.smart_scan?,
         "skipStaticParams":     options.skip_static_parameters?,
-        "projectId":            options.project_id || get_first_project_id,
+        "projectId":            options.project_id,
         "slowEpTimeout":        options.slow_ep_timeout,
         "targetTimeout":        options.target_timeout,
         "authObjectId":         options.auth_object_id,
@@ -255,13 +255,6 @@ module SecTester
       if response.status.unauthorized?
         raise SecTester::Error.new("API token is invalid, please generate a new one response: #{response.try &.body.to_s}")
       end
-    end
-
-    private def get_first_project_id : String
-      response = send_with_retry(method: "GET", url: "#{BASE_URL}/api/v1/projects")
-      JSON.parse(response.body.to_s).as_a.first["id"].to_s
-    rescue e : JSON::ParseException
-      raise SecTester::Error.new("Error getting first project id: #{e.message} response: #{response.try &.body.to_s}")
     end
 
     private def upload_archive(target : Target, discard : Bool = true) : String # this returns an archive ID
