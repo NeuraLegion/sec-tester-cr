@@ -10,7 +10,7 @@ require "./sec_tester/repeater.cr"
 
 module SecTester
   Log     = ::Log.for("SecTester")
-  VERSION = "1.6.0"
+  VERSION = "1.6.2"
 
   backend = ::Log::IOBackend.new(STDOUT)
 
