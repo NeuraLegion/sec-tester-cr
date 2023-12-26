@@ -4,7 +4,6 @@ require "./errors.cr"
 
 module SecTester
   class Scan
-    BASE_URL = ENV["CLUSTER_URL"]? || "https://app.brightsec.com"
 
     getter repeater : Repeater
     getter scan_duration : Time::Span = Time::Span.new
@@ -18,8 +17,9 @@ module SecTester
     @issues : Set(SecTester::Issue) = Set(SecTester::Issue).new
 
     def initialize(@token : String)
+      @base_url = ENV["CLUSTER_URL"]? || "https://app.brightsec.com"
       validate_token!
-      @repeater = Repeater.new(api_key: @token, hostname: URI.parse(BASE_URL).host.to_s)
+      @repeater = Repeater.new(api_key: @token, hostname: URI.parse(@base_url).host.to_s)
       spawn do
         @repeater.run
       end
@@ -39,7 +39,7 @@ module SecTester
       headers["Authorization"] = "Api-Key #{@token}"
       headers["Content-Type"] = "application/json"
       headers["Accept"] = "application/json"
-      headers["Host"] = URI.parse(BASE_URL).host.to_s
+      headers["Host"] = URI.parse(@base_url).host.to_s
 
       Log.debug { "Setting headers: #{headers}" }
 
@@ -58,7 +58,7 @@ module SecTester
       end
 
       @running = true
-      new_scan_url = "#{BASE_URL}/api/v1/scans"
+      new_scan_url = "#{@base_url}/api/v1/scans"
 
       file_id = upload_archive(target)
 
@@ -164,7 +164,7 @@ module SecTester
                 str << color_severity(issue.severity)
                 str << "\n"
                 str << "Link to Issue: ".colorize.cyan.bold
-                str << "#{BASE_URL}#{issue.issue_url}".colorize.blue.bold
+                str << "#{@base_url}#{issue.issue_url}".colorize.blue.bold
                 str << "\n"
                 str << "Details: ".colorize.cyan.bold
                 str << issue.details.gsub("\n", " ").colorize.white.bold
@@ -208,7 +208,7 @@ module SecTester
       if @running
         @running = false
         raise SecTester::Error.new("Cannot stop scan without scan_id, make sure to 'start' the scan before stopping") unless @scan_id
-        stop_url = "#{BASE_URL}/api/v1/scans/#{@scan_id}/stop"
+        stop_url = "#{@base_url}/api/v1/scans/#{@scan_id}/stop"
 
         Log.debug { "Stopping scan #{@scan_id}" }
 
@@ -225,7 +225,7 @@ module SecTester
 
     # method to check if repeater is up and running
     def repeater_running? : Bool
-      repeater_url = "#{BASE_URL}/api/v1/repeaters/#{@repeater.id}"
+      repeater_url = "#{@base_url}/api/v1/repeaters/#{@repeater.id}"
 
       response = send_with_retry(method: "GET", url: repeater_url)
       JSON.parse(response.body.to_s)["status"].to_s == "connected"
@@ -249,16 +249,16 @@ module SecTester
     end
 
     private def validate_token!
-      check_user_url = "#{BASE_URL}/api/v1/scans/summary"
+      check_user_url = "#{@base_url}/api/v1/scans/summary"
 
       response = send_with_retry(method: "GET", url: check_user_url)
       if response.status.unauthorized?
-        raise SecTester::Error.new("API token is invalid for #{BASE_URL}, please generate a new one!. response: #{response.try &.body.to_s}")
+        raise SecTester::Error.new("API token is invalid for #{@base_url}, please generate a new one!. response: #{response.try &.body.to_s}")
       end
     end
 
     private def upload_archive(target : Target, discard : Bool = true) : String # this returns an archive ID
-      archive_url = "#{BASE_URL}/api/v1/files?discard=#{discard}"
+      archive_url = "#{@base_url}/api/v1/files?discard=#{discard}"
 
       headers = get_headers
       body_io = IO::Memory.new
@@ -277,14 +277,14 @@ module SecTester
 
       response = send_with_retry(method: "POST", url: archive_url, headers: headers, body: body_io.to_s)
 
-      Log.debug { "Uploaded archive to #{BASE_URL}/api/v1/files?discard=#{discard} response: #{response.body}" }
+      Log.debug { "Uploaded archive to #{@base_url}/api/v1/files?discard=#{discard} response: #{response.body}" }
       JSON.parse(response.body.to_s)["id"].to_s
     rescue e : JSON::ParseException
       raise SecTester::Error.new("Error uploading archive: #{e.message} response: #{response.try &.body.to_s}")
     end
 
     private def get_issues : Array(Issue)
-      issues_url = "#{BASE_URL}/api/v1/scans/#{@scan_id}/issues"
+      issues_url = "#{@base_url}/api/v1/scans/#{@scan_id}/issues"
 
       response = send_with_retry("GET", issues_url)
       Array(Issue).from_json(response.body.to_s)
@@ -293,7 +293,7 @@ module SecTester
     end
 
     private def poll_call : HTTP::Client::Response
-      poll_url = "#{BASE_URL}/api/v1/scans/#{@scan_id}"
+      poll_url = "#{@base_url}/api/v1/scans/#{@scan_id}"
       send_with_retry("GET", poll_url)
     end
 
