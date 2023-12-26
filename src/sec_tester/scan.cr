@@ -11,13 +11,13 @@ module SecTester
     getter entry_points : Atomic(Int32) = Atomic.new(0)
     getter total_params : Atomic(Int32) = Atomic.new(0)
     getter scan_status : String = ""
+    getter base_url : String = ENV["CLUSTER_URL"]? || "https://app.brightsec.com"
 
     @scan_id : String?
     @running : Bool = false
     @issues : Set(SecTester::Issue) = Set(SecTester::Issue).new
 
     def initialize(@token : String)
-      @base_url = ENV["CLUSTER_URL"]? || "https://app.brightsec.com"
       validate_token!
       @repeater = Repeater.new(api_key: @token, hostname: URI.parse(@base_url).host.to_s)
       spawn do
