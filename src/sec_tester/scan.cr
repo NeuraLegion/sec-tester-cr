@@ -253,7 +253,7 @@ module SecTester
 
       response = send_with_retry(method: "GET", url: check_user_url)
       if response.status.unauthorized?
-        raise SecTester::Error.new("API token is invalid, please generate a new one response: #{response.try &.body.to_s}")
+        raise SecTester::Error.new("API token is invalid for #{BASE_URL}, please generate a new one!. response: #{response.try &.body.to_s}")
       end
     end
 
