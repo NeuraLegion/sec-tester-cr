@@ -9,7 +9,7 @@ module SecTester
     getter issues
     getter entry_points : Atomic(Int32) = Atomic.new(0)
     getter total_params : Atomic(Int32) = Atomic.new(0)
-    getter total_requests : Atomic(Int64) = Atomic.new(0)
+    getter total_requests : Atomic(Int64) = Atomic.new(0_i64)
     getter scan_status : String = ""
     getter base_url : String = ENV["CLUSTER_URL"]? || "https://app.brightsec.com"
 
