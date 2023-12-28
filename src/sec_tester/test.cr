@@ -20,7 +20,7 @@ module SecTester
       initialize(token)
     end
 
-    delegate :scan_duration, :issues, :entry_points, :total_params, :scan_status, to: @scan
+    delegate :scan_duration, :issues, :entry_points, :total_params, :scan_status, :total_requests, to: @scan
 
     def run_check(scan_name : String, tests : String | Array(String)?, target : Target, severity_threshold : Severity = :low, options : Options = Options.new, on_issue : Bool = true, timeout : Time::Span? = 20.minutes)
       Log.info { "Running check #{tests} on #{target}" }
