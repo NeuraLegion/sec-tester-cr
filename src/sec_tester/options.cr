@@ -18,8 +18,8 @@ module SecTester
       "fragment",
       "path",
       "headers",
-      "artificial-query",
-      "artificial-fragment",
+      "artifical-query",
+      "artifical-fragment",
     ]
 
     def initialize(
