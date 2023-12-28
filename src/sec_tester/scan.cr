@@ -9,6 +9,7 @@ module SecTester
     getter issues
     getter entry_points : Atomic(Int32) = Atomic.new(0)
     getter total_params : Atomic(Int32) = Atomic.new(0)
+    getter total_requests : Atomic(Int64) = Atomic.new(0)
     getter scan_status : String = ""
     getter base_url : String = ENV["CLUSTER_URL"]? || "https://app.brightsec.com"
 
@@ -130,6 +131,7 @@ module SecTester
         @scan_duration = (response_json["elapsed"].as_i64.milliseconds rescue 0.milliseconds) # From time to times the API will send strange values
         @entry_points.set(response_json["entryPoints"].as_i)
         @total_params.set(response_json["totalParams"].as_i)
+        @total_requests.set(response_json["requests"].as_i64)
         get_issues.each { |issue| @issues << issue unless @issues.includes?(issue) }
         @scan_status = response_json["status"].as_s
 
