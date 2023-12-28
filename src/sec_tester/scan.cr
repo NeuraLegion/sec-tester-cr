@@ -4,7 +4,6 @@ require "./errors.cr"
 
 module SecTester
   class Scan
-
     getter repeater : Repeater
     getter scan_duration : Time::Span = Time::Span.new
     getter issues
@@ -128,7 +127,7 @@ module SecTester
         response = poll_call
         response_json = JSON.parse(response.body.to_s)
 
-        @scan_duration = response_json["elapsed"].as_i64.milliseconds
+        @scan_duration = (response_json["elapsed"].as_i64.milliseconds rescue 0.milliseconds) # From time to times the API will send strange values
         @entry_points.set(response_json["entryPoints"].as_i)
         @total_params.set(response_json["totalParams"].as_i)
         get_issues.each { |issue| @issues << issue unless @issues.includes?(issue) }
