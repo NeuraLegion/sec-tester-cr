@@ -80,7 +80,14 @@ module SecTester
 
       headers = HTTP::Headers.new
       request_data["headers"].as_h.each do |key, value|
-        headers[key] = value.as_s
+        case value
+        when String
+          headers[key] = value.as_s
+        when Array
+          headers[key] = value.first.as_s
+        else
+          headers[key] = value.to_s
+        end
       end
       # Make request
       response = HTTP::Client.exec(
@@ -104,6 +111,7 @@ module SecTester
       # send response as ack
       request_event.ack(data)
     rescue e : Exception
+      Log.error(exception: e) {"Error handling request: #{e.inspect_with_backtrace}"}
       data = {
         protocol:  "http",
         errorCode: "#{e.class}",

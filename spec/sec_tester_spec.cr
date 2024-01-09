@@ -224,6 +224,48 @@ describe SecTester::Test do
     server.try &.close
   end
 
+  it "starts SQLi test via repeater" do
+    server = HTTP::Server.new do |context|
+      name = URI.decode_www_form(context.request.query_params["name"]?.to_s)
+
+      context.response.content_type = "text/html"
+      context.response << <<-EOF
+        <html>
+          <body>
+            <h1>Hello, world!</h1>
+            <p>#{name}</p>
+            SQL Error: you have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'jhon'' at line 1
+            PostgreSQL Error: ERROR: syntax error at or near "jhon"
+          </body>
+        </html>
+        EOF
+    end
+
+    addr = server.bind_unused_port
+    spawn do
+      server.listen
+    end
+
+    tester = SecTester::Test.new
+    expect_raises(SecTester::IssueFound) do
+      tester.run_check(
+        scan_name: "UnitTestingScan - sqli testing",
+        tests: ["sqli"],
+        target: SecTester::Target.new(
+          url: "http://#{addr}/?name=jhon",
+        ),
+        options: SecTester::Options.new(
+          smart_scan: false,
+          skip_static_parameters: false,
+          project_id: "7Yx6ovyMj954WHcLvYyWzo",
+        )
+      )
+    end
+    (tester.scan_duration > 0.seconds).should be_true
+  ensure
+    server.try &.close
+  end
+
   it "starts a function oriented test for XSS" do
     tester = SecTester::Test.new
     expect_raises(SecTester::IssueFound) do
