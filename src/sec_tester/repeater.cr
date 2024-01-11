@@ -111,7 +111,7 @@ module SecTester
       # send response as ack
       request_event.ack(data)
     rescue e : Exception
-      Log.error(exception: e) {"Error handling request: #{e.inspect_with_backtrace}"}
+      Log.error(exception: e) { "Error handling request: #{e.inspect_with_backtrace}" }
       data = {
         protocol:  "http",
         errorCode: "#{e.class}",

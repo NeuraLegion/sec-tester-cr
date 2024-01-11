@@ -54,6 +54,16 @@ module SecTester
       verify_method
     end
 
+    def to_json
+      verify_method
+      {
+        method:  @method,
+        url:     @url,
+        headers: @headers.to_h,
+        body:    @body,
+      }
+    end
+
     def to_har : String
       verify_method
       har = HAR::Data.new(

@@ -60,7 +60,7 @@ module SecTester
       @running = true
       new_scan_url = "#{@base_url}/api/v1/scans"
 
-      file_id = upload_archive(target)
+      ep_id = create_ep(target, options)
 
       # Information about caller
       ci_name = case
@@ -86,14 +86,14 @@ module SecTester
         "name":                 scan_name,
         "module":               "dast",
         "tests":                tests,
-        "fileId":               file_id,
+        "entryPointIds":        [ep_id],
         "repeaters":            [@repeater.id],
         "attackParamLocations": options.param_locations,
         "discoveryTypes":       options.crawl? ? ["crawler", "archive"] : ["archive"],
         "crawlerUrls":          options.crawl? ? [target.url] : nil,
         "smart":                options.smart_scan?,
         "skipStaticParams":     options.skip_static_parameters?,
-        "projectId":            options.project_id,
+        "projectId":            options.project_id || get_first_project_id, # to make sure the scan is created in the right project
         "slowEpTimeout":        options.slow_ep_timeout,
         "targetTimeout":        options.target_timeout,
         "authObjectId":         options.auth_object_id,
@@ -258,32 +258,6 @@ module SecTester
       end
     end
 
-    private def upload_archive(target : Target, discard : Bool = true) : String # this returns an archive ID
-      archive_url = "#{@base_url}/api/v1/files?discard=#{discard}"
-
-      headers = get_headers
-      body_io = IO::Memory.new
-      file_io = IO::Memory.new(target.to_har)
-      multipart_headers = HTTP::Headers.new
-      multipart_headers["Content-Type"] = "application/har+json"
-      HTTP::FormData.build(body_io, MIME::Multipart.generate_boundary) do |builder|
-        builder.file(
-          "file",
-          file_io,
-          HTTP::FormData::FileMetadata.new(filename: "#{Random::Secure.hex}.har"),
-          multipart_headers
-        )
-        headers["Content-Type"] = builder.content_type
-      end
-
-      response = send_with_retry(method: "POST", url: archive_url, headers: headers, body: body_io.to_s)
-
-      Log.debug { "Uploaded archive to #{@base_url}/api/v1/files?discard=#{discard} response: #{response.body}" }
-      JSON.parse(response.body.to_s)["id"].to_s
-    rescue e : JSON::ParseException
-      raise SecTester::Error.new("Error uploading archive: #{e.message} response: #{response.try &.body.to_s}")
-    end
-
     private def get_issues : Array(Issue)
       issues_url = "#{@base_url}/api/v1/scans/#{@scan_id}/issues"
 
@@ -291,6 +265,29 @@ module SecTester
       Array(Issue).from_json(response.body.to_s)
     rescue e : JSON::ParseException
       raise SecTester::Error.new("Error getting issue data: #{e.message} response: #{response.try &.body.to_s}")
+    end
+
+    private def create_ep(target : Target, options : Options) : String # Returns the EP ID to be used for the scan
+      project_id = options.project_id || get_first_project_id
+      new_ep_url = "#{@base_url}/api/v2/projects/#{project_id}/entry-points"
+
+      body = {
+        request:    target.to_json,
+        repeaterId: @repeater.id,
+      }.to_json
+
+      response = send_with_retry("POST", new_ep_url, body: body)
+      JSON.parse(response.body.to_s)["id"].to_s
+    rescue e : JSON::ParseException
+      raise SecTester::Error.new("Error creating entry point: #{e.message} response: #{response.try &.body.to_s}")
+    end
+
+    private def get_first_project_id : String
+      # This will get the "predefind"\"default" project
+      projects_url = "#{@base_url}/api/v2/projects?predefined=true"
+
+      response = send_with_retry("GET", projects_url)
+      JSON.parse(response.body.to_s)[0]["id"].to_s
     end
 
     private def poll_call : HTTP::Client::Response
