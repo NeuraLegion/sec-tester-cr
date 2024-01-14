@@ -287,7 +287,10 @@ module SecTester
       projects_url = "#{@base_url}/api/v2/projects?predefined=true"
 
       response = send_with_retry("GET", projects_url)
-      JSON.parse(response.body.to_s)[0]["id"].to_s
+
+      JSON.parse(response.body.to_s)["items"][0]["id"].to_s
+    rescue e : JSON::ParseException
+      raise SecTester::Error.new("Error getting project ID: #{e.message} response: #{response.try &.body.to_s}")
     end
 
     private def poll_call : HTTP::Client::Response
