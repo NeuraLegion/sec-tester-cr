@@ -84,7 +84,7 @@ module SecTester
         when String
           headers[key] = value.as_s
         when Array
-          headers[key] = value.first.as_s
+          headers[key] = value.map(&.as_s)
         else
           headers[key] = value.to_s
         end

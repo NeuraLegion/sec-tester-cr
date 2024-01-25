@@ -277,7 +277,14 @@ module SecTester
       }.to_json
 
       response = send_with_retry("POST", new_ep_url, body: body)
-      JSON.parse(response.body.to_s)["id"].to_s
+      if response.status.conflict? # If EP already exists, we need to get it's ID
+        Log.debug { "EP already exists, getting ID" }
+        url_from_header = response.headers["Location"].to_s
+        ep_id = url_from_header.split("/").last.to_s
+      else
+        ep_id = JSON.parse(response.body.to_s)["id"].to_s
+      end
+      ep_id.presence || raise(SecTester::Error.new("Error creating entry point: #{response.body}"))
     rescue e : JSON::ParseException
       raise SecTester::Error.new("Error creating entry point: #{e.message} response: #{response.try &.body.to_s}")
     end

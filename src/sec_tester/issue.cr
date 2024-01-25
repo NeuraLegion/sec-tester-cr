@@ -12,7 +12,9 @@ module SecTester
     getter resources : Array(String)
     getter id : String
     getter cwe : String
-    getter cvss : String
+
+    @[JSON::Field(emit_null: true)]
+    getter cvss : String?
 
     @[JSON::Field(key: "scanId")]
     property scan_id : String
