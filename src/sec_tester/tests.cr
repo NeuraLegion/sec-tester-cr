@@ -1,6 +1,7 @@
 module SecTester
   SUPPORTED_TESTS = {
     "amazon_s3_takeover",
+    "bola",
     "broken_saml_auth",
     "brute_force_login",
     "business_constraint_bypass",
@@ -30,9 +31,10 @@ module SecTester
     "lrrl",
     "mass_assignment",
     "nosql",
-    "open_buckets",
+    "open_cloud_storage",
     "open_database",
     "osi",
+    "password_reset_poisoning",
     "prompt_injection",
     "proto_pollution",
     "retire_js",
