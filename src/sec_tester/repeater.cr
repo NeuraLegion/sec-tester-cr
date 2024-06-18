@@ -75,26 +75,26 @@ module SecTester
       return unless data = request_event.data
       return unless request_event.id
 
-      request_data = data[0].try &.as_h?
-      return unless request_data
+      request_data = EventData.from_json(data[0].to_json)
 
       headers = HTTP::Headers.new
-      request_data["headers"].as_h.each do |key, value|
-        case value
-        when String
-          headers[key] = value.as_s
-        when Array
-          headers[key] = value.map(&.as_s)
-        else
-          headers[key] = value.to_s
-        end
+
+      request_data.headers.each do |key, value|
+        headers[key] = value.to_s
       end
+
+      if request_data.encoding == "base64" && request_data.body.presence
+        body = Base64.decode_string(request_data.body.to_s)
+      else
+        body = request_data.body
+      end
+
       # Make request
       response = HTTP::Client.exec(
-        method: request_data["method"].as_s,
-        url: request_data["url"].as_s,
+        method: request_data.method,
+        url: request_data.url,
         headers: headers,
-        body: request_data["body"]?.try &.as_s
+        body: body
       )
       # prepare response data
       hash = Hash(String, String).new
@@ -102,12 +102,22 @@ module SecTester
         hash[key] = value.first
       end
 
-      data = {
-        protocol:   "http",
-        statusCode: response.status_code,
-        body:       response.body.to_s,
-        headers:    hash,
-      }
+      if request_data.encoding == "base64"
+        data = {
+          protocol:   "http",
+          statusCode: response.status_code,
+          body:       Base64.strict_encode(response.body.to_s),
+          headers:    hash,
+          encoding:   "base64",
+        }
+      else
+        data = {
+          protocol:   "http",
+          statusCode: response.status_code,
+          body:       response.body.to_s,
+          headers:    hash,
+        }
+      end
       # send response as ack
       request_event.ack(data)
     rescue e : Exception
@@ -118,6 +128,23 @@ module SecTester
         message:   e.message,
       }
       request_event.ack(data)
+    end
+
+    # This is the struct of the event data
+    struct EventData
+      include JSON::Serializable
+
+      getter method : String
+      getter url : String
+      getter headers : Hash(String, String | Array(String))
+      getter body : String?
+
+      # Extra fields
+      getter encoding : String?
+      @[JSON::Field(key: "maxContentSize")]
+      getter max_content_size : Int32?
+      getter timeout : Int32?
+      getter decompress : Bool?
     end
   end
 end
