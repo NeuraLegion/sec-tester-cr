@@ -107,6 +107,31 @@ tester.run_check(scan_name: "UnitTestingScan - XSS - function only", tests: ["xs
 end
 ```
 
+> **Note**
+>
+> You also have an optional "param_overwrite" parameter that allows you to overwrite the parameters in the request.
+> This is useful when your function is expecting a specific data object like JSON or JWT etc..
+
+You can use the `param_overwrite` to overwrite the value to be attacked like:
+
+```crystal
+jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+tester.run_check(scan_name: "jwt-testing", tests: ["jwt"], param_overwrite: jwt) do |payload, response|
+  spawn do
+    while payload_data = payload.receive?
+      # This is where we send the payload to the function and send back a response
+      # In this example we just want to send back the payload
+      # as we are testing reflection
+      # my_function is a demo function that returns the payload
+      response_data = my_JWT_verification(payload_data)
+
+      # we end up sending the response back to the channel
+      response.send(response_data)
+    end
+  end
+end
+```
+
 There is also a variant of this interface that accepts target and yields back the whole HTTP::Server::Context.
 This is useful if you want to do something with the response body or headers.
 

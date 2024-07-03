@@ -286,6 +286,26 @@ describe SecTester::Test do
     end
   end
 
+  it "starts a function oriented test for XSS including param_overwrite" do
+    tester = SecTester::Test.new
+    expect_raises(SecTester::IssueFound) do
+      tester.run_check(scan_name: "xss", tests: ["xss"], param_overwrite: "abcdefu") do |payload, response|
+        spawn do
+          while payload_data = payload.receive?
+            # This is where we send the payload to the function and send back a response
+            # In this example we just want to send back the payload
+            # as we are testing reflection
+            # my_function is a demo function that returns the payload
+            response_data = my_function(payload_data)
+
+            # we end up sending the response back to the channel
+            response.send(response_data)
+          end
+        end
+      end
+    end
+  end
+
   it "starts a request/response oriented test for XSS" do
     tester = SecTester::Test.new
     target = SecTester::Target.new(

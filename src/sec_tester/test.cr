@@ -71,7 +71,7 @@ module SecTester
       server.try &.close
     end
 
-    def run_check(scan_name : String, tests : String | Array(String)?, severity_threshold : Severity = :low, options : Options = Options.new, on_issue : Bool = true, &)
+    def run_check(scan_name : String, tests : String | Array(String)?, severity_threshold : Severity = :low, options : Options = Options.new, on_issue : Bool = true, param_overwrite : String? = nil, &)
       # Start a server for the user, in this form we can test specific functions.
       payload = Channel(String).new
       response = Channel(String).new
@@ -95,7 +95,7 @@ module SecTester
       end
 
       target = Target.new(
-        url: "http://#{addr}?artificial=dummydata",
+        url: "http://#{addr}?artificial=#{param_overwrite || "dummydata"}",
       )
 
       yield payload, response
