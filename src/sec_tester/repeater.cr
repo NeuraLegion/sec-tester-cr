@@ -5,11 +5,9 @@ module SecTester
   class Repeater
     @api_key : String
     @socket : SocketIO::Client
-    @running : Bool = false
     getter id : String = ""
 
     def initialize(@api_key : String, hostname : String = "app.brightsec.com")
-      @running = true
       @socket = SocketIO::Client.new(
         host: hostname,
         path: "/api/ws/v1/",
@@ -23,19 +21,6 @@ module SecTester
         }
       )
       deploy
-      spawn do
-        heartbeat
-      end
-    end
-
-    private def heartbeat
-      loop do
-        sleep 10.seconds
-        break unless @running
-        @socket.emit("ping")
-      end
-    rescue e : Exception
-      Log.error { "Repeater heartbeat error: #{e.message}" }
     end
 
     def deploy
@@ -45,7 +30,6 @@ module SecTester
     def close
       @socket.emit("undeploy")
       @socket.close
-      @running = false
     end
 
     def run
