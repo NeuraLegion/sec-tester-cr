@@ -23,19 +23,6 @@ module SecTester
         }
       )
       deploy
-      spawn do
-        heartbeat
-      end
-    end
-
-    private def heartbeat
-      loop do
-        sleep 10.seconds
-        break unless @running
-        @socket.emit("ping")
-      end
-    rescue e : Exception
-      Log.error { "Repeater heartbeat error: #{e.message}" }
     end
 
     def deploy
