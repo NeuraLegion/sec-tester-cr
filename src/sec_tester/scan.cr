@@ -289,7 +289,7 @@ module SecTester
       raise SecTester::Error.new(<<-EOF
         Error creating entry point: #{target.method} #{target.url}
         Error message: #{e.message}
-        response status: #{response.status_code}
+        response status: #{response.try &.status_code}
         response body: #{response.try &.body.to_s}
         EOF
       )

@@ -1,5 +1,6 @@
 require "socket_io"
 require "http"
+require "uuid"
 
 module SecTester
   class Repeater
@@ -19,7 +20,7 @@ module SecTester
       @socket.connect(
         data: {
           token:  @api_key,
-          domain: "#{System.hostname}##{Random.rand(1000)}",
+          domain: "#{System.hostname}##{UUID.random}",
         }
       )
       deploy
