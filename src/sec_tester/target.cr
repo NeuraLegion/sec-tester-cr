@@ -35,7 +35,7 @@ module SecTester
       @body : String = "",
       @response_headers : HTTP::Headers = HTTP::Headers.new,
       @response_body : String = "",
-      @response_status : Int32 = 200
+      @response_status : Int32 = 200,
     )
       # Small hack to ensure localhost scans run
       # the NL\BrightSec scanner doesn't allow for `localhost` as a hostname

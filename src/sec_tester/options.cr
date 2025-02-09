@@ -31,7 +31,7 @@ module SecTester
       @param_locations : Array(String) = ["query", "body", "fragment"],
       @auth_object_id : String? = nil,
       @template_id : String? = nil,
-      @target_timeout : Int32? = nil
+      @target_timeout : Int32? = nil,
     )
       raise SecTester::Error.new("Invalid param_locations: #{@param_locations}") unless @param_locations.all? { |l| VALID_LOCATIONS.includes?(l) }
     end
