@@ -19,7 +19,7 @@ module SecTester
       @socket.connect(
         data: {
           token:  @api_key,
-          domain: System.hostname,
+          domain: "#{System.hostname}##{Random.rand(1000)}",
         }
       )
       deploy
