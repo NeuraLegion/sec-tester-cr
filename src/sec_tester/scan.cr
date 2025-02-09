@@ -286,7 +286,13 @@ module SecTester
       end
       ep_id.presence || raise(SecTester::Error.new("Error creating entry point: #{response.body}"))
     rescue e : JSON::ParseException
-      raise SecTester::Error.new("Error creating entry point: #{e.message} response: #{response.try &.body.to_s}")
+      raise SecTester::Error.new(<<-EOF
+        Error creating entry point: #{target.method} #{target.url}
+        Error message: #{e.message}
+        response status: #{response.status_code}
+        response body: #{response.try &.body.to_s}
+        EOF
+      )
     end
 
     private def get_first_project_id : String
